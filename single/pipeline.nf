@@ -15,10 +15,10 @@ Channel.fromPath(params.wsi).set { wsi_file }
 // Process: read_wsi
 process read_wsi {
     input:
-    path wsi_file
+        path wsi_file
 
     output:
-    path "${params.outdir}/thumbnail.png" into wsi_thumbnail
+        path "${params.outdir}/thumbnail.png", emit: wsi_thumbnail
 
     script:
     """
@@ -29,10 +29,10 @@ process read_wsi {
 // Process: stain_normalization
 process stain_normalization {
     input:
-    path wsi_file
+        path wsi_file
 
     output:
-    path "${params.outdir}/normalized_wsi.png" into normalized_wsi
+        path "${params.outdir}/normalized_wsi.png", emit: normalized_wsi
 
     script:
     """
@@ -43,10 +43,10 @@ process stain_normalization {
 // Process: tissue_mask
 process tissue_mask {
     input:
-    path normalized_wsi
+        path normalized_wsi
 
     output:
-    path "${params.outdir}/tissue_mask.png" into tissue_mask
+        path "${params.outdir}/tissue_mask.png", emit: tissue_mask
 
     script:
     """
@@ -57,11 +57,11 @@ process tissue_mask {
 // Process: nuclei_segmentation
 process nuclei_segmentation {
     input:
-    path normalized_wsi
-    path tissue_mask
+        path normalized_wsi
+        path tissue_mask
 
     output:
-    path "${params.outdir}/nuclei_result.pkl" into nuclei_result
+        path "${params.outdir}/nuclei_result.pkl", emit: nuclei_result
 
     script:
     """
@@ -72,10 +72,10 @@ process nuclei_segmentation {
 // Process: feature_extraction
 process feature_extraction {
     input:
-    path nuclei_result
+        path nuclei_result
 
     output:
-    path "${params.outdir}/features.csv" into extracted_features
+        path "${params.outdir}/features.csv", emit: extracted_features
 
     script:
     """
@@ -86,10 +86,10 @@ process feature_extraction {
 // Process: model_inference
 process model_inference {
     input:
-    path extracted_features
+        path extracted_features
 
     output:
-    path "${params.outdir}/prediction.txt" into prediction
+        path "${params.outdir}/prediction.txt", emit: prediction
 
     script:
     """
@@ -100,11 +100,11 @@ process model_inference {
 // Process: visualize_heatmap
 process visualize_heatmap {
     input:
-    path normalized_wsi
-    path prediction
+        path normalized_wsi
+        path prediction
 
     output:
-    path "${params.outdir}/heatmap.png" into heatmap
+        path "${params.outdir}/heatmap.png", emit: heatmap
 
     script:
     """
@@ -115,11 +115,11 @@ process visualize_heatmap {
 // Process: extract_tiles
 process extract_tiles {
     input:
-    path normalized_wsi
-    path heatmap
+        path normalized_wsi
+        path heatmap
 
     output:
-    path "${params.outdir}/tiles/*" into tiles
+        path "${params.outdir}/tiles/*", emit: tiles
 
     script:
     """
@@ -132,14 +132,33 @@ workflow {
     // Start with the WSI file
     read_wsi(wsi_file)
 
-    // Connect the outputs to the next processes
+    // Perform stain normalization
     stain_normalization(wsi_file)
 
-    // Proceed with the normalized WSI
-    tissue_mask(normalized_wsi)
-    nuclei_segmentation(normalized_wsi, tissue_mask)
-    feature_extraction(nuclei_result)
-    model_inference(extracted_features)
-    visualize_heatmap(normalized_wsi, prediction)
-    extract_tiles(normalized_wsi, heatmap)
+    // Create tissue mask using normalized WSI
+    tissue_mask(stain_normalization.out.normalized_wsi)
+
+    // Perform nuclei segmentation
+    nuclei_segmentation(
+        stain_normalization.out.normalized_wsi,
+        tissue_mask.out.tissue_mask
+    )
+
+    // Extract features from nuclei segmentation
+    feature_extraction(nuclei_segmentation.out.nuclei_result)
+
+    // Perform model inference
+    model_inference(feature_extraction.out.extracted_features)
+
+    // Visualize heatmap
+    visualize_heatmap(
+        stain_normalization.out.normalized_wsi,
+        model_inference.out.prediction
+    )
+
+    // Extract tiles
+    extract_tiles(
+        stain_normalization.out.normalized_wsi,
+        visualize_heatmap.out.heatmap
+    )
 }
