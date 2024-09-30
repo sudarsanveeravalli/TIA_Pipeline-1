@@ -24,8 +24,9 @@ process read_wsi {
 
     script:
     """
-    python ${params.scripts}/read_wsi.py --input $wsi_file --output ${params.outdir}/thumbnail.png
+    python ${params.scripts}/read_wsi.py --input $wsi_file --output thumbnail.png
     """
+     publishDir "${params.outdir}", mode: 'move'
 }
 
 // Process: stain_normalization
@@ -38,8 +39,9 @@ process stain_normalization {
 
     script:
     """
-    python ${params.scripts}/stain_normalization.py --input $wsi_file --output ${params.outdir}/normalized_wsi.png
+    python ${params.scripts}/stain_normalization.py --input $wsi_file --output normalized_wsi.png
     """
+    publishDir "${params.outdir}", mode: 'move'
 }
 
 // Process: tissue_mask
@@ -52,8 +54,9 @@ process tissue_mask {
 
     script:
     """
-    python ${params.scripts}/tissue_mask.py --input $normalized_wsi --output ${params.outdir}/tissue_mask.png
+    python ${params.scripts}/tissue_mask.py --input $normalized_wsi --output tissue_mask.png
     """
+    publishDir "${params.outdir}", mode: 'move'
 }
 
 // Process: nuclei_segmentation
@@ -67,8 +70,9 @@ process nuclei_segmentation {
 
     script:
     """
-    python ${params.scripts}/hovernet.py --input $normalized_wsi --mask $tissue_mask --output ${params.outdir}/nuclei_result.pkl
+    python ${params.scripts}/hovernet.py --input $normalized_wsi --mask $tissue_mask --output nuclei_result.pkl
     """
+    publishDir "${params.outdir}", mode: 'move'
 }
 
 // Process: feature_extraction
@@ -81,8 +85,9 @@ process feature_extraction {
 
     script:
     """
-    python ${params.scripts}/feature_extract.py --input $nuclei_result --output ${params.outdir}/features.csv
+    python ${params.scripts}/feature_extract.py --input $nuclei_result --output features.csv
     """
+    publishDir "${params.outdir}", mode: 'move'
 }
 
 // Process: model_inference
@@ -95,8 +100,9 @@ process model_inference {
 
     script:
     """
-    python ${params.scripts}/model_inference.py --input $extracted_features --output ${params.outdir}/prediction.txt
+    python ${params.scripts}/model_inference.py --input $extracted_features --output prediction.txt
     """
+    publishDir "${params.outdir}", mode: 'move'
 }
 
 // Process: visualize_heatmap
@@ -110,8 +116,9 @@ process visualize_heatmap {
 
     script:
     """
-    python ${params.scripts}/visualize_heatmap.py --input $normalized_wsi --prediction $prediction --output ${params.outdir}/heatmap.png
+    python ${params.scripts}/visualize_heatmap.py --input $normalized_wsi --prediction $prediction --output heatmap.png
     """
+    publishDir "${params.outdir}", mode: 'move'
 }
 
 // Process: extract_tiles
