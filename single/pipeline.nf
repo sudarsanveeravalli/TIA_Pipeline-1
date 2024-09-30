@@ -4,7 +4,9 @@
 params.wsi = "/home/ubuntu/bala/bala/ImpartLabs/tmp/DI_dombox2_0006.svs"
 
 // Define the output directory for results
-params.outdir = "results"
+params.outdir = "/home/ubuntu/bala/bala/ImpartLabs/tmp/results"
+// Scripts
+params.scripts  = "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts"
 
 // Create the output directory if it doesn't exist
 new File(params.outdir).mkdirs()
@@ -22,7 +24,7 @@ process read_wsi {
 
     script:
     """
-    python Scripts/read_wsi.py --input $wsi_file --output ${params.outdir}/thumbnail.png
+    python ${params.scripts}/read_wsi.py --input $wsi_file --output ${params.outdir}/thumbnail.png
     """
 }
 
@@ -36,7 +38,7 @@ process stain_normalization {
 
     script:
     """
-    python Scripts/stain_normalization.py --input $wsi_file --output ${params.outdir}/normalized_wsi.png
+    python ${params.scripts}/stain_normalization.py --input $wsi_file --output ${params.outdir}/normalized_wsi.png
     """
 }
 
@@ -50,7 +52,7 @@ process tissue_mask {
 
     script:
     """
-    python Scripts/tissue_mask.py --input $normalized_wsi --output ${params.outdir}/tissue_mask.png
+    python ${params.scripts}/tissue_mask.py --input $normalized_wsi --output ${params.outdir}/tissue_mask.png
     """
 }
 
@@ -65,7 +67,7 @@ process nuclei_segmentation {
 
     script:
     """
-    python Scripts/hovernet.py --input $normalized_wsi --mask $tissue_mask --output ${params.outdir}/nuclei_result.pkl
+    python ${params.scripts}/hovernet.py --input $normalized_wsi --mask $tissue_mask --output ${params.outdir}/nuclei_result.pkl
     """
 }
 
@@ -79,7 +81,7 @@ process feature_extraction {
 
     script:
     """
-    python Scripts/feature_extract.py --input $nuclei_result --output ${params.outdir}/features.csv
+    python ${params.scripts}/feature_extract.py --input $nuclei_result --output ${params.outdir}/features.csv
     """
 }
 
@@ -93,7 +95,7 @@ process model_inference {
 
     script:
     """
-    python Scripts/model_inference.py --input $extracted_features --output ${params.outdir}/prediction.txt
+    python ${params.scripts}/model_inference.py --input $extracted_features --output ${params.outdir}/prediction.txt
     """
 }
 
@@ -108,7 +110,7 @@ process visualize_heatmap {
 
     script:
     """
-    python Scripts/visualize_heatmap.py --input $normalized_wsi --prediction $prediction --output ${params.outdir}/heatmap.png
+    python ${params.scripts}/visualize_heatmap.py --input $normalized_wsi --prediction $prediction --output ${params.outdir}/heatmap.png
     """
 }
 
@@ -123,7 +125,7 @@ process extract_tiles {
 
     script:
     """
-    python Scripts/extract_tiles.py --input $normalized_wsi --heatmap $heatmap --output ${params.outdir}/tiles/
+    python ${params.scripts}/extract_tiles.py --input $normalized_wsi --heatmap $heatmap --output ${params.outdir}/tiles/
     """
 }
 
