@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 // Define the WSI input file
-params.wsi = "data/example.svs"
+params.wsi = "/home/ubuntu/bala/bala/ImpartLabs/tmp/DI_dombox2_0006.svs"
 
 // Define the output directory for results
 params.outdir = "results"
