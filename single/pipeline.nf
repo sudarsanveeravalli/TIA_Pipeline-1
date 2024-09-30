@@ -22,7 +22,7 @@ process read_wsi {
 
     script:
     """
-    python scripts/read_wsi.py --input $wsi_file --output ${params.outdir}/thumbnail.png
+    python Scripts/read_wsi.py --input $wsi_file --output ${params.outdir}/thumbnail.png
     """
 }
 
@@ -36,7 +36,7 @@ process stain_normalization {
 
     script:
     """
-    python scripts/stain_normalization.py --input $wsi_file --output ${params.outdir}/normalized_wsi.png
+    python Scripts/stain_normalization.py --input $wsi_file --output ${params.outdir}/normalized_wsi.png
     """
 }
 
@@ -50,7 +50,7 @@ process tissue_mask {
 
     script:
     """
-    python scripts/tissue_mask.py --input $normalized_wsi --output ${params.outdir}/tissue_mask.png
+    python Scripts/tissue_mask.py --input $normalized_wsi --output ${params.outdir}/tissue_mask.png
     """
 }
 
@@ -65,7 +65,7 @@ process nuclei_segmentation {
 
     script:
     """
-    python scripts/hovernet.py --input $normalized_wsi --mask $tissue_mask --output ${params.outdir}/nuclei_result.pkl
+    python Scripts/hovernet.py --input $normalized_wsi --mask $tissue_mask --output ${params.outdir}/nuclei_result.pkl
     """
 }
 
@@ -79,7 +79,7 @@ process feature_extraction {
 
     script:
     """
-    python scripts/feature_extract.py --input $nuclei_result --output ${params.outdir}/features.csv
+    python Scripts/feature_extract.py --input $nuclei_result --output ${params.outdir}/features.csv
     """
 }
 
@@ -93,7 +93,7 @@ process model_inference {
 
     script:
     """
-    python scripts/model_inference.py --input $extracted_features --output ${params.outdir}/prediction.txt
+    python Scripts/model_inference.py --input $extracted_features --output ${params.outdir}/prediction.txt
     """
 }
 
@@ -108,7 +108,7 @@ process visualize_heatmap {
 
     script:
     """
-    python scripts/visualize_heatmap.py --input $normalized_wsi --prediction $prediction --output ${params.outdir}/heatmap.png
+    python Scripts/visualize_heatmap.py --input $normalized_wsi --prediction $prediction --output ${params.outdir}/heatmap.png
     """
 }
 
@@ -123,7 +123,7 @@ process extract_tiles {
 
     script:
     """
-    python scripts/extract_tiles.py --input $normalized_wsi --heatmap $heatmap --output ${params.outdir}/tiles/
+    python Scripts/extract_tiles.py --input $normalized_wsi --heatmap $heatmap --output ${params.outdir}/tiles/
     """
 }
 
