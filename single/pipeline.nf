@@ -1,12 +1,9 @@
 #!/usr/bin/env nextflow
 
-// Define the WSI input file
+// Define parameters
 params.wsi = "/home/ubuntu/bala/bala/ImpartLabs/tmp/DI_dombox2_0006.svs"
-
-// Define the output directory for results
 params.outdir = "/home/ubuntu/bala/bala/ImpartLabs/tmp/results"
-// Scripts
-params.scripts  = "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts"
+params.scripts = "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts"
 
 // Create the output directory if it doesn't exist
 new File(params.outdir).mkdirs()
@@ -20,13 +17,13 @@ process read_wsi {
         path wsi_file
 
     output:
-        path "${params.outdir}/thumbnail.png", emit: wsi_thumbnail
+        path "thumbnail.png", emit: wsi_thumbnail
 
     script:
     """
     python ${params.scripts}/read_wsi.py --input $wsi_file --output thumbnail.png
     """
-     publishDir "${params.outdir}", mode: 'move'
+    publishDir "${params.outdir}", mode: 'copy'
 }
 
 // Process: stain_normalization
@@ -35,13 +32,13 @@ process stain_normalization {
         path wsi_file
 
     output:
-        path "${params.outdir}/normalized_wsi.png", emit: normalized_wsi
+        path "normalized_wsi.png", emit: normalized_wsi
 
     script:
     """
     python ${params.scripts}/stain_normalization.py --input $wsi_file --output normalized_wsi.png
     """
-    publishDir "${params.outdir}", mode: 'move'
+    publishDir "${params.outdir}", mode: 'copy'
 }
 
 // Process: tissue_mask
@@ -50,13 +47,13 @@ process tissue_mask {
         path normalized_wsi
 
     output:
-        path "${params.outdir}/tissue_mask.png", emit: tissue_mask
+        path "tissue_mask.png", emit: tissue_mask
 
     script:
     """
     python ${params.scripts}/tissue_mask.py --input $normalized_wsi --output tissue_mask.png
     """
-    publishDir "${params.outdir}", mode: 'move'
+    publishDir "${params.outdir}", mode: 'copy'
 }
 
 // Process: nuclei_segmentation
@@ -66,13 +63,13 @@ process nuclei_segmentation {
         path tissue_mask
 
     output:
-        path "${params.outdir}/nuclei_result.pkl", emit: nuclei_result
+        path "nuclei_result.pkl", emit: nuclei_result
 
     script:
     """
     python ${params.scripts}/hovernet.py --input $normalized_wsi --mask $tissue_mask --output nuclei_result.pkl
     """
-    publishDir "${params.outdir}", mode: 'move'
+    publishDir "${params.outdir}", mode: 'copy'
 }
 
 // Process: feature_extraction
@@ -81,13 +78,13 @@ process feature_extraction {
         path nuclei_result
 
     output:
-        path "${params.outdir}/features.csv", emit: extracted_features
+        path "features.csv", emit: extracted_features
 
     script:
     """
     python ${params.scripts}/feature_extract.py --input $nuclei_result --output features.csv
     """
-    publishDir "${params.outdir}", mode: 'move'
+    publishDir "${params.outdir}", mode: 'copy'
 }
 
 // Process: model_inference
@@ -96,13 +93,13 @@ process model_inference {
         path extracted_features
 
     output:
-        path "${params.outdir}/prediction.txt", emit: prediction
+        path "prediction.txt", emit: prediction
 
     script:
     """
     python ${params.scripts}/model_inference.py --input $extracted_features --output prediction.txt
     """
-    publishDir "${params.outdir}", mode: 'move'
+    publishDir "${params.outdir}", mode: 'copy'
 }
 
 // Process: visualize_heatmap
@@ -112,13 +109,13 @@ process visualize_heatmap {
         path prediction
 
     output:
-        path "${params.outdir}/heatmap.png", emit: heatmap
+        path "heatmap.png", emit: heatmap
 
     script:
     """
     python ${params.scripts}/visualize_heatmap.py --input $normalized_wsi --prediction $prediction --output heatmap.png
     """
-    publishDir "${params.outdir}", mode: 'move'
+    publishDir "${params.outdir}", mode: 'copy'
 }
 
 // Process: extract_tiles
@@ -128,12 +125,14 @@ process extract_tiles {
         path heatmap
 
     output:
-        path "${params.outdir}/tiles/*", emit: tiles
+        path "tiles/", emit: tiles_dir
 
     script:
     """
-    python ${params.scripts}/extract_tiles.py --input $normalized_wsi --heatmap $heatmap --output ${params.outdir}/tiles/
+    mkdir tiles
+    python ${params.scripts}/extract_tiles.py --input $normalized_wsi --heatmap $heatmap --output tiles/
     """
+    publishDir "${params.outdir}", mode: 'copy'
 }
 
 // Workflow Definition
