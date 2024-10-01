@@ -1,67 +1,64 @@
-import os
-import argparse
-from tiatoolbox.wsicore.wsireader import WSIReader
-from tiatoolbox.tools import stainnorm
-from tiatoolbox.data import stain_norm_target
-import matplotlib.pyplot as plt
-import numpy as np
+#!/usr/bin/env python
 
-# Argument parser
-parser = argparse.ArgumentParser(description="Stain Normalization for a batch of WSIs")
-parser.add_argument('--input', type=str, help='Path to WSI file')
-parser.add_argument('--output', type=str, help='Directory to save normalized WSI')
-parser.add_argument('--method', type=str, default='Vahadane', help='Stain normalization method (e.g., Vahadane, Macenko, Reinhard, Ruifrok)')
-parser.add_argument('--extract_patch', type=bool, default=True, help='Whether to extract a patch or normalize the whole slide')
+import argparse
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+from tiatoolbox import data, logger
+from tiatoolbox.tools import stainnorm
+from tiatoolbox.wsicore.wsireader import WSIReader
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description="Stain Normalization")
+parser.add_argument('--input', type=str, required=True, help='Path to input WSI file')
+parser.add_argument('--output', type=str, required=True, help='Path to save normalized WSI image')
+parser.add_argument('--reference', type=str, help='Path to reference image for stain normalization', default=None)
+parser.add_argument('--method', type=str, choices=['vahadane', 'macenko', 'reinhard', 'ruifrok'], default='vahadane', help='Stain normalization method to use')
 
 args = parser.parse_args()
 
-# Create output directory based on WSI filename
-wsi_filename = os.path.basename(args.input).split('.')[0]
-output_dir = os.path.join(args.output, wsi_filename)
-os.makedirs(output_dir, exist_ok=True)
+# Set up logging
+logger.setLevel('INFO')
 
 # Load the WSI
-wsi = WSIReader.open(args.input)
+wsi_reader = WSIReader.open(args.input)
 
-# Extract a tissue patch to normalize or process the whole WSI
-if args.extract_patch:
-    # Extract a region of interest (ROI) from the WSI
-    sample_patch = wsi.read_region(location=[800, 1600], level=0, size=[800, 800])
+# Read the whole slide at low resolution for processing (adjust as needed)
+slide_image = wsi_reader.slide_thumbnail(resolution=1.25, units="power")
+
+# Load or set the reference image
+if args.reference:
+    # Load the reference image from the provided path
+    reference_image = plt.imread(args.reference)
+    logger.info(f"Using provided reference image: {args.reference}")
 else:
-    # Use the entire WSI thumbnail if no patch extraction is required
-    sample_patch = wsi.slide_thumbnail(1.0)
+    # Use a default reference image provided by tiatoolbox
+    reference_image = data.stain_norm_target()
+    logger.info("Using default reference image from tiatoolbox.")
 
-# Ensure the patch is writable
-if not sample_patch.flags.writeable:
-    sample_patch = np.copy(sample_patch)
-    sample_patch.flags.writeable = True
+# Initialize the stain normalizer
+if args.method == 'vahadane':
+    stain_normalizer = stainnorm.VahadaneNormalizer()
+elif args.method == 'macenko':
+    stain_normalizer = stainnorm.MacenkoNormalizer()
+elif args.method == 'reinhard':
+    stain_normalizer = stainnorm.ReinhardNormalizer()
+elif args.method == 'ruifrok':
+    stain_normalizer = stainnorm.RuifrokNormalizer()
+else:
+    raise ValueError(f"Unsupported stain normalization method: {args.method}")
 
-# Load the target image for stain normalization (from TIAToolbox dataset)
-target_image = stain_norm_target()
+# Fit the normalizer to the reference image
+stain_normalizer.fit(reference_image)
 
-# Get the stain normalizer method
-stain_normalizer = stainnorm.get_normalizer(args.method)
-stain_normalizer.fit(target_image)
+# Perform stain normalization
+normalized_image = stain_normalizer.transform(slide_image)
 
-# Apply normalization to the WSI patch or WSI
-normalized_image = stain_normalizer.transform(sample_patch)
+# Ensure the output directory exists
+output_path = Path(args.output)
+output_path.parent.mkdir(parents=True, exist_ok=True)
 
-# Save the normalized WSI patch or WSI
-normalized_path = os.path.join(output_dir, f"normalized_wsi_{args.method}.png")
-plt.imsave(normalized_path, normalized_image)
+# Save the normalized image
+plt.imsave(args.output, normalized_image)
 
-# Optionally, visualize the results (not necessary for batch processing but useful for debugging)
-plt.figure(figsize=(10, 5))
-plt.subplot(1, 3, 1)
-plt.imshow(target_image)
-plt.title("Target Image")
-plt.axis("off")
-plt.subplot(1, 3, 2)
-plt.imshow(sample_patch)
-plt.title("Source Image")
-plt.axis("off")
-plt.subplot(1, 3, 3)
-plt.imshow(normalized_image)
-plt.title(f"{args.method} Stain Normalized")
-plt.axis("off")
-plt.show()
+logger.info(f"Stain normalization completed. Normalized image saved to {args.output}")
