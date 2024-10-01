@@ -1,32 +1,47 @@
 import os
 import argparse
-from tiatoolbox.wsicore.wsireader import WSIReader
+import cv2  # OpenCV for handling regular images
 from tiatoolbox.tools.tissuemask import MorphologicalMasker
 import matplotlib.pyplot as plt
 import numpy as np
 
 # Argument parser
-parser = argparse.ArgumentParser(description="Tissue Masking for WSIs")
-parser.add_argument('--input', type=str, help='Path to WSI file')
+parser = argparse.ArgumentParser(description="Tissue Masking for WSIs or Regular Images")
+parser.add_argument('--input', type=str, help='Path to WSI or regular image file')
 parser.add_argument('--output', type=str, help='Directory to save tissue mask')
-parser.add_argument('--resolution', type=float, default=1.25, help='Resolution for tissue mask generation (in objective power)')
+parser.add_argument('--resolution', type=float, default=1.25, help='Resolution for tissue mask generation (only used for WSIs)')
 
 args = parser.parse_args()
 
-# Create output directory based on WSI filename
-wsi_filename = os.path.basename(args.input).split('.')[0]
-output_dir = os.path.join(args.output, wsi_filename)
+# Create output directory based on input filename
+input_filename = os.path.basename(args.input).split('.')[0]
+output_dir = os.path.join(args.output, input_filename)
 os.makedirs(output_dir, exist_ok=True)
 
-# Load the WSI
-wsi = WSIReader.open(args.input)
+# Check if the input file exists
+if not os.path.exists(args.input):
+    raise FileNotFoundError(f"Input file {args.input} not found.")
 
-# Generate the tissue mask
-mask = wsi.tissue_mask(resolution=args.resolution, units="power")
+# Try to handle both WSI files and regular images
+if args.input.lower().endswith(('.svs', '.tiff', '.ndpi', '.vms')):
+    # Handle WSIs
+    from tiatoolbox.wsicore.wsireader import WSIReader
+    wsi = WSIReader.open(args.input)
+    mask = wsi.tissue_mask(resolution=args.resolution, units="power")
+    mask_thumb = mask.slide_thumbnail(resolution=args.resolution, units="power")
 
-# Generate thumbnail for visualization purposes
-wsi_thumb = wsi.slide_thumbnail(resolution=args.resolution, units="power")
-mask_thumb = mask.slide_thumbnail(resolution=args.resolution, units="power")
+elif args.input.lower().endswith(('.png', '.jpg', '.jpeg')):
+    # Handle regular images using OpenCV
+    img = cv2.imread(args.input)
+    if img is None:
+        raise ValueError(f"Failed to load image: {args.input}")
+
+    # Convert to grayscale and apply Otsu's threshold to create a binary mask
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, mask_thumb = cv2.threshold(gray_img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+else:
+    raise ValueError(f"Unsupported file format: {args.input}")
 
 # Ensure the mask is writable if needed (in case it's read-only)
 if not mask_thumb.flags.writeable:
@@ -35,19 +50,12 @@ if not mask_thumb.flags.writeable:
 
 # Save the tissue mask thumbnail
 mask_path = os.path.join(output_dir, "tissue_mask.png")
-plt.imsave(mask_path, mask_thumb)
+cv2.imwrite(mask_path, mask_thumb)
 
 # Optionally, visualize the results (useful for debugging, not necessary in batch mode)
 plt.figure(figsize=(10, 5))
-plt.subplot(1, 2, 1)
-plt.imshow(wsi_thumb)
-plt.title("WSI Thumbnail")
-plt.axis("off")
-
-plt.subplot(1, 2, 2)
-plt.imshow(mask_thumb)
+plt.imshow(mask_thumb, cmap='gray')
 plt.title("Tissue Mask")
 plt.axis("off")
-
 plt.savefig(os.path.join(output_dir, "mask_visualization.png"))
 plt.show()
