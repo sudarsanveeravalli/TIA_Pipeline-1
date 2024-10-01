@@ -13,9 +13,11 @@ parser.add_argument('--resolution', type=float, default=1.25, help='Resolution f
 
 args = parser.parse_args()
 
-# Extract input filename (without extension) and create output directory
+# Extract input filename (without extension) to create output folder, if needed
 input_filename = os.path.basename(args.input).split('.')[0]
-output_dir = os.path.join(args.output, input_filename)
+output_dir = args.output
+
+# Create the output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
 
 # Check if the input file exists
@@ -48,14 +50,11 @@ if not mask_thumb.flags.writeable:
     mask_thumb = np.copy(mask_thumb)
     mask_thumb.flags.writeable = True
 
+# Generate the full path for the output mask file (ensure it's not treated as a directory)
+mask_filename = f"{input_filename}_tissue_mask.png"
+mask_path = os.path.join(output_dir, mask_filename)
+
 # Save the tissue mask as an image
-mask_path = os.path.join(output_dir, "tissue_mask.png")
-
-# Ensure mask_path is a valid file path and not a directory
-if os.path.isdir(mask_path):
-    raise IsADirectoryError(f"{mask_path} is a directory, expected a file path.")
-
-# Save tissue mask using OpenCV
 cv2.imwrite(mask_path, mask_thumb)
 
 # Optionally, visualize the results (useful for debugging)
@@ -63,8 +62,11 @@ plt.figure(figsize=(10, 5))
 plt.imshow(mask_thumb, cmap='gray')
 plt.title("Tissue Mask")
 plt.axis("off")
-visualization_path = os.path.join(output_dir, "mask_visualization.png")
+
+# Save the visualization
+visualization_path = os.path.join(output_dir, f"{input_filename}_mask_visualization.png")
 plt.savefig(visualization_path)
 plt.show()
 
 print(f"Tissue mask saved to: {mask_path}")
+print(f"Mask visualization saved to: {visualization_path}")
