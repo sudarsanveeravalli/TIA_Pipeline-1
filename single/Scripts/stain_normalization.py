@@ -51,19 +51,16 @@ else:
 # Fit the normalizer to the reference image
 stain_normalizer.fit(reference_image)
 
-# Perform stain normalization
-normalized_image = stain_normalizer.transform(slide_image)
+# Make the slide image writable by copying it
+slide_image_copy = slide_image.copy()
+
+# Perform stain normalization on the copied image
+normalized_image = stain_normalizer.transform(slide_image_copy)
 
 # Ensure the output directory exists
 output_path = Path(args.output)
 output_dir = output_path.parent
-
-# Create the output directory if it doesn't exist
 output_dir.mkdir(parents=True, exist_ok=True)
-
-# Ensure output file path has an extension
-if output_path.suffix == '':
-    output_path = output_path.with_suffix('.png')
 
 # Save the normalized image
 plt.imsave(str(output_path), normalized_image)
