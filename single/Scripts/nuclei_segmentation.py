@@ -1,17 +1,34 @@
 import argparse
-from tiatoolbox.models.engine.nucleus_instance_segmentor import NucleusInstanceSegmentor
-from tiatoolbox.wsicore.wsireader import WSIReader
-from tiatoolbox.utils.visualization import overlay_prediction_contours
+import os
 import joblib
 import matplotlib.pyplot as plt
+from tiatoolbox.models.engine.nucleus_instance_segmentor import NucleusInstanceSegmentor
+from tiatoolbox.utils.visualization import overlay_prediction_contours
+from tiatoolbox.wsicore.wsireader import WSIReader
 
 # Parsing input arguments
 parser = argparse.ArgumentParser(description="Nuclei Segmentation using HoVerNet")
-parser.add_argument('--input', type=str, help='Path to normalized WSI or tile image')
-parser.add_argument('--output_dir', type=str, help='Directory to save output results')
+parser.add_argument('--input', type=str, help='Path to normalized WSI or tile image', required=True)
+parser.add_argument('--output_dir', type=str, help='Directory to save output results', required=True)
+parser.add_argument('--metadata', type=str, help='Path to metadata.pkl file', required=True)
 parser.add_argument('--mode', type=str, default="wsi", choices=["wsi", "tile"], help='Processing mode: "wsi" or "tile"')
 parser.add_argument('--gpu', action='store_true', help='Use GPU for processing')
 args = parser.parse_args()
+
+# Load metadata if provided
+if os.path.exists(args.metadata):
+    with open(args.metadata, 'rb') as f:
+        metadata = joblib.load(f)
+        print(f"Loaded metadata from {args.metadata}")
+else:
+    raise FileNotFoundError(f"Metadata file {args.metadata} not found.")
+
+# Access important metadata information (e.g., resolution/mpp)
+mpp = metadata.get('mpp', None)
+if mpp:
+    print(f"Microns per pixel (MPP) from metadata: {mpp}")
+else:
+    print("Warning: No MPP information found in metadata. Defaulting to model configuration.")
 
 # Initialize NucleusInstanceSegmentor
 segmentor = NucleusInstanceSegmentor(
