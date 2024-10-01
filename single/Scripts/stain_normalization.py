@@ -3,7 +3,7 @@
 import argparse
 import matplotlib.pyplot as plt
 from pathlib import Path
-
+import pickle
 from tiatoolbox import data, logger
 from tiatoolbox.tools import stainnorm
 from tiatoolbox.wsicore.wsireader import WSIReader
@@ -20,19 +20,18 @@ args = parser.parse_args()
 # Set up logging
 logger.setLevel('INFO')
 
-# Load the WSI
+# Load the WSI and extract metadata
 wsi_reader = WSIReader.open(args.input)
+metadata = wsi_reader.info.as_dict()  # Save metadata to reapply later
 
-# Read the whole slide at low resolution for processing (adjust as needed)
+# Extract slide at low resolution (or adjust for higher resolution)
 slide_image = wsi_reader.slide_thumbnail(resolution=1.25, units="power")
 
 # Load or set the reference image
 if args.reference:
-    # Load the reference image from the provided path
     reference_image = plt.imread(args.reference)
     logger.info(f"Using provided reference image: {args.reference}")
 else:
-    # Use a default reference image provided by tiatoolbox
     reference_image = data.stain_norm_target()
     logger.info("Using default reference image from tiatoolbox.")
 
@@ -65,4 +64,10 @@ output_dir.mkdir(parents=True, exist_ok=True)
 # Save the normalized image
 plt.imsave(str(output_path), normalized_image)
 
+# Save the metadata to a file for future use
+metadata_path = str(output_dir / 'metadata.pkl')
+with open(metadata_path, 'wb') as f:
+    pickle.dump(metadata, f)
+
 logger.info(f"Stain normalization completed. Normalized image saved to {output_path}")
+logger.info(f"Metadata saved to {metadata_path}")
