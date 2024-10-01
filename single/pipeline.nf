@@ -149,32 +149,32 @@ workflow {
     read_wsi(wsi_file)
 
     // Perform stain normalization
-    stain_normalization(wsi_file)
+    normalized_wsi = stain_normalization(wsi_file)
 
     // Create tissue mask using normalized WSI
-    tissue_mask(stain_normalization.out.normalized_wsi)
+    tissue_mask_im = tissue_mask(normalized_wsi)
 
     // Perform nuclei segmentation
-    nuclei_segmentation(
-        stain_normalization.out.normalized_wsi,
-        tissue_mask.out.tissue_mask
+    nuclei_segment = nuclei_segmentation(
+        normalized_wsi,
+        tissue_mask_im
     )
 
     // Extract features from nuclei segmentation
-    feature_extraction(nuclei_segmentation.out.nuclei_result)
+    features = feature_extraction(nuclei_segment)
 
     // Perform model inference
-    model_inference(feature_extraction.out.extracted_features)
+    model_inf = model_inference(features)
 
     // Visualize heatmap
-    visualize_heatmap(
-        stain_normalization.out.normalized_wsi,
-        model_inference.out.prediction
+    hmap = visualize_heatmap(
+        normalized_wsi,
+        model_inf
     )
 
     // Extract tiles
     extract_tiles(
-        stain_normalization.out.normalized_wsi,
-        visualize_heatmap.out.heatmap
+        normalized_wsi,
+        hmap
     )
 }
