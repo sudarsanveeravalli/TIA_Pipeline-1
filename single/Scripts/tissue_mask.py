@@ -7,13 +7,13 @@ import numpy as np
 
 # Argument parser
 parser = argparse.ArgumentParser(description="Tissue Masking for WSIs or Regular Images")
-parser.add_argument('--input', type=str, help='Path to WSI or regular image file')
-parser.add_argument('--output', type=str, help='Directory to save tissue mask')
+parser.add_argument('--input', type=str, help='Path to WSI or regular image file', required=True)
+parser.add_argument('--output', type=str, help='Directory to save tissue mask', required=True)
 parser.add_argument('--resolution', type=float, default=1.25, help='Resolution for tissue mask generation (only used for WSIs)')
 
 args = parser.parse_args()
 
-# Create output directory based on input filename
+# Extract input filename (without extension) and create output directory
 input_filename = os.path.basename(args.input).split('.')[0]
 output_dir = os.path.join(args.output, input_filename)
 os.makedirs(output_dir, exist_ok=True)
@@ -48,14 +48,23 @@ if not mask_thumb.flags.writeable:
     mask_thumb = np.copy(mask_thumb)
     mask_thumb.flags.writeable = True
 
-# Save the tissue mask thumbnail
+# Save the tissue mask as an image
 mask_path = os.path.join(output_dir, "tissue_mask.png")
+
+# Ensure mask_path is a valid file path and not a directory
+if os.path.isdir(mask_path):
+    raise IsADirectoryError(f"{mask_path} is a directory, expected a file path.")
+
+# Save tissue mask using OpenCV
 cv2.imwrite(mask_path, mask_thumb)
 
-# Optionally, visualize the results (useful for debugging, not necessary in batch mode)
+# Optionally, visualize the results (useful for debugging)
 plt.figure(figsize=(10, 5))
 plt.imshow(mask_thumb, cmap='gray')
 plt.title("Tissue Mask")
 plt.axis("off")
-plt.savefig(os.path.join(output_dir, "mask_visualization.png"))
+visualization_path = os.path.join(output_dir, "mask_visualization.png")
+plt.savefig(visualization_path)
 plt.show()
+
+print(f"Tissue mask saved to: {mask_path}")
