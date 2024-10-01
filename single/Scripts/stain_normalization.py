@@ -1,5 +1,5 @@
 from tiatoolbox.wsicore.wsireader import WSIReader
-from tiatoolbox.tools.stainnorm import get_normalizer
+from tiatoolbox.tools import stainnorm
 from tiatoolbox.data import stain_norm_target
 import argparse
 import matplotlib.pyplot as plt
@@ -21,7 +21,7 @@ tissue_patch = wsi.slide_thumbnail(1.0)
 target_image = stain_norm_target()
 
 # Get the stain normalizer (Vahadane)
-normalizer = get_normalizer(method="vahadane")
+normalizer = stainnorm.VahadaneNormalizer()
 
 # Fit the normalizer to the target image
 normalizer.fit(target_image)
