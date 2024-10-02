@@ -15,7 +15,7 @@ parser.add_argument('--mode', type=str, default="wsi", choices=["wsi", "tile"], 
 parser.add_argument('--gpu', action='store_true', help='Use GPU for processing')
 args = parser.parse_args()
 
-# Load metadata if provided
+# Load metadata
 if os.path.exists(args.metadata):
     with open(args.metadata, 'rb') as f:
         metadata = joblib.load(f)
@@ -23,12 +23,12 @@ if os.path.exists(args.metadata):
 else:
     raise FileNotFoundError(f"Metadata file {args.metadata} not found.")
 
-# Access important metadata information (e.g., resolution/mpp)
+# Get MPP (Microns Per Pixel) from metadata
 mpp = metadata.get('mpp', None)
 if mpp:
     print(f"Microns per pixel (MPP) from metadata: {mpp}")
 else:
-    print("Warning: No MPP information found in metadata. Defaulting to model configuration.")
+    raise ValueError("No MPP found in the metadata. Please check the metadata file.")
 
 # Initialize NucleusInstanceSegmentor
 segmentor = NucleusInstanceSegmentor(
@@ -39,12 +39,13 @@ segmentor = NucleusInstanceSegmentor(
     auto_generate_mask=False
 )
 
-# Run the segmentation
+# Run the segmentation with manually set MPP for WSIs
 print(f"Running segmentation on {args.input}")
 output = segmentor.predict(
     imgs=[args.input],
     save_dir=args.output_dir,
     mode=args.mode,
+    resolution={"mpp": mpp},  # Setting MPP explicitly from metadata
     on_gpu=args.gpu,
     crash_on_exception=True
 )
