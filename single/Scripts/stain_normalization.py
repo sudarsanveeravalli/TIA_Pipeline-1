@@ -26,7 +26,7 @@ wsi_reader = WSIReader.open(args.input)
 metadata = wsi_reader.info.as_dict()  # Save metadata to reapply later
 
 # Extract full-resolution WSI or appropriate resolution based on requirements
-slide_image = wsi_reader.read_region(location=(0, 0), level=0, size=wsi_reader.slide_dimensions()[0])
+slide_image = wsi_reader.read_region(location=(0, 0), level=0, size=wsi_reader.slide_dimensions(resolution=0.5, units="mpp")[0])
 
 # Load or set the reference image
 if args.reference:
