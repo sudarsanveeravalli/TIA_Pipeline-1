@@ -1,9 +1,13 @@
+#!/usr/bin/env python 
+
 import os
 import argparse
 import cv2  # OpenCV for handling regular images
 from tiatoolbox.tools.tissuemask import MorphologicalMasker
-import matplotlib.pyplot as plt
+from tiatoolbox.wsicore.wsireader import WSIReader
+from PIL import Image, TiffTags
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Argument parser
 parser = argparse.ArgumentParser(description="Tissue Masking for WSIs or Regular Images")
@@ -27,10 +31,11 @@ if not os.path.exists(args.input):
 # Try to handle both WSI files and regular images
 if args.input.lower().endswith(('.svs', '.tiff', '.ndpi', '.vms')):
     # Handle WSIs
-    from tiatoolbox.wsicore.wsireader import WSIReader
     wsi = WSIReader.open(args.input)
+    metadata = wsi.info.as_dict()  # Extract metadata (MPP, etc.)
     mask = wsi.tissue_mask(resolution=args.resolution, units="power")
     mask_thumb = mask.slide_thumbnail(resolution=args.resolution, units="power")
+    mpp = metadata.get('mpp', (0.5, 0.5))  # Microns per pixel (MPP)
 
 elif args.input.lower().endswith(('.png', '.jpg', '.jpeg')):
     # Handle regular images using OpenCV
@@ -42,6 +47,9 @@ elif args.input.lower().endswith(('.png', '.jpg', '.jpeg')):
     gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, mask_thumb = cv2.threshold(gray_img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
+    # Dummy metadata (since regular images do not contain MPP)
+    mpp = (0.5, 0.5)  # Default to 0.5 microns per pixel for the sake of example
+
 else:
     raise ValueError(f"Unsupported file format: {args.input}")
 
@@ -50,12 +58,24 @@ if not mask_thumb.flags.writeable:
     mask_thumb = np.copy(mask_thumb)
     mask_thumb.flags.writeable = True
 
-# Generate the full path for the output mask file (ensure it's not treated as a directory)
-mask_filename = f"{input_filename}_tissue_mask.png"
+# Convert the mask to a PIL Image
+mask_image_pil = Image.fromarray(mask_thumb)
+
+# Set TIFF-specific metadata (e.g., resolution)
+tiff_metadata = {
+    TiffTags.RESOLUTION_UNIT: 3,  # 1 = no unit, 2 = inch, 3 = centimeter
+    TiffTags.X_RESOLUTION: (1 / mpp[0]),  # Convert MPP to DPI
+    TiffTags.Y_RESOLUTION: (1 / mpp[1]),
+    TiffTags.SOFTWARE: 'TissueMaskingTool',
+    TiffTags.DOCUMENT_NAME: args.input,  # Store input file reference
+}
+
+# Generate the full path for the output mask file
+mask_filename = f"{input_filename}_tissue_mask.tiff"
 mask_path = os.path.join(output_dir, mask_filename)
 
-# Save the tissue mask as an image
-cv2.imwrite(mask_path, mask_thumb)
+# Save the tissue mask as a TIFF image, embedding metadata
+mask_image_pil.save(mask_path, tiffinfo=tiff_metadata)
 
 # Optionally, visualize the results (useful for debugging)
 plt.figure(figsize=(10, 5))
