@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser(description="Tissue Masking for WSIs or Regular
 parser.add_argument('--input', type=str, help='Path to WSI or regular image file', required=True)
 parser.add_argument('--output', type=str, help='Directory to save tissue mask', required=True)
 parser.add_argument('--resolution', type=float, default=1.25, help='Resolution for tissue mask generation (only used for WSIs)')
+parser.add_argument('--mpp', type=float, help="Manually provide Microns Per Pixel (MPP) if missing in metadata", default=0.5)
 
 args = parser.parse_args()
 
@@ -32,10 +33,18 @@ if not os.path.exists(args.input):
 if args.input.lower().endswith(('.svs', '.tiff', '.ndpi', '.vms')):
     # Handle WSIs
     wsi = WSIReader.open(args.input)
-    metadata = wsi.info.as_dict()  # Extract metadata (MPP, etc.)
-    mask = wsi.tissue_mask(resolution=args.resolution, units="power")
-    mask_thumb = mask.slide_thumbnail(resolution=args.resolution, units="power")
-    mpp = metadata.get('mpp', (0.5, 0.5))  # Microns per pixel (MPP)
+    
+    # Extract metadata
+    metadata = wsi.info.as_dict()
+    mpp = metadata.get('mpp', (args.mpp, args.mpp))  # Use provided MPP if missing
+    
+    if not mpp:
+        print(f"Warning: MPP not found in metadata, using default MPP of {args.mpp}")
+        mpp = (args.mpp, args.mpp)
+    
+    # Generate tissue mask at the specified resolution
+    mask = wsi.tissue_mask(resolution=args.resolution, units="mpp")  # Use MPP units explicitly
+    mask_thumb = mask.slide_thumbnail(resolution=args.resolution, units="mpp")
 
 elif args.input.lower().endswith(('.png', '.jpg', '.jpeg')):
     # Handle regular images using OpenCV
@@ -48,7 +57,7 @@ elif args.input.lower().endswith(('.png', '.jpg', '.jpeg')):
     _, mask_thumb = cv2.threshold(gray_img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
     # Dummy metadata (since regular images do not contain MPP)
-    mpp = (0.5, 0.5)  # Default to 0.5 microns per pixel for the sake of example
+    mpp = (args.mpp, args.mpp)
 
 else:
     raise ValueError(f"Unsupported file format: {args.input}")
