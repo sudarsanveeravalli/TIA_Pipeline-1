@@ -28,6 +28,11 @@ metadata = wsi_reader.info.as_dict()  # Save metadata to reapply later
 # Extract full-resolution WSI or appropriate resolution based on requirements
 slide_image = wsi_reader.read_region(location=(0, 0), level=0, size=wsi_reader.slide_dimensions(resolution=0.5, units="mpp")[0])
 
+# Create a writable copy of the image
+slide_image_writable = np.array(slide_image)  # Convert to NumPy array
+if not slide_image_writable.flags.writeable:
+    slide_image_writable = np.copy(slide_image_writable)  # Ensure writable
+
 # Load or set the reference image
 if args.reference:
     reference_image = plt.imread(args.reference)
@@ -52,7 +57,7 @@ else:
 stain_normalizer.fit(reference_image)
 
 # Perform stain normalization on the slide image
-normalized_image = stain_normalizer.transform(slide_image)
+normalized_image = stain_normalizer.transform(slide_image_writable)
 
 # Ensure the output directory exists
 output_path = Path(args.output)
