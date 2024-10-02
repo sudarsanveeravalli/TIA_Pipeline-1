@@ -3,7 +3,7 @@
 import argparse
 import matplotlib.pyplot as plt
 from pathlib import Path
-from PIL import Image, TiffTags
+from PIL import Image
 import numpy as np
 from tiatoolbox import data, logger
 from tiatoolbox.tools import stainnorm
@@ -51,11 +51,8 @@ else:
 # Fit the normalizer to the reference image
 stain_normalizer.fit(reference_image)
 
-# Make the slide image writable by copying it
-slide_image_copy = slide_image.copy()
-
-# Perform stain normalization on the copied image
-normalized_image = stain_normalizer.transform(slide_image_copy)
+# Perform stain normalization on the slide image
+normalized_image = stain_normalizer.transform(slide_image)
 
 # Ensure the output directory exists
 output_path = Path(args.output)
@@ -69,16 +66,11 @@ if normalized_image.shape[-1] == 4:  # RGBA to RGB if needed
 # Convert normalized_image (NumPy array) to PIL Image for saving as TIFF
 normalized_image_pil = Image.fromarray((normalized_image * 255).astype(np.uint8))
 
-# TIFF-specific metadata (such as resolution) can be embedded
-tiff_metadata = {
-    TiffTags.RESOLUTION_UNIT: 3,  # 1 = no unit, 2 = inch, 3 = centimeter
-    TiffTags.X_RESOLUTION: (1 / metadata.get('mpp', [0.5])[0]),  # Use MPP for resolution
-    TiffTags.Y_RESOLUTION: (1 / metadata.get('mpp', [0.5])[1]),
-    TiffTags.SOFTWARE: 'StainNormalizationTool',
-    TiffTags.DOCUMENT_NAME: args.input,  # Store input file reference
-}
+# Define resolution metadata based on MPP (Microns Per Pixel)
+x_resolution = 1 / metadata.get('mpp', [0.5])[0]  # Default to 0.5 MPP if missing
+y_resolution = 1 / metadata.get('mpp', [0.5])[1]
 
-# Save the normalized image as TIFF, embedding metadata
-normalized_image_pil.save(output_path, tiffinfo=tiff_metadata)
+# Save the normalized image as TIFF, embedding resolution metadata
+normalized_image_pil.save(output_path, resolution=(x_resolution, y_resolution), dpi=(x_resolution, y_resolution))
 
 logger.info(f"Stain normalization completed. Normalized TIFF image saved to {output_path}")
