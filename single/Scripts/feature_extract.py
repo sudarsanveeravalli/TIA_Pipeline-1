@@ -1,47 +1,73 @@
+#!/usr/bin/env python
+
+import os
+import argparse
 import joblib
 import numpy as np
 import pandas as pd
-import argparse
-import cv2  # Using OpenCV for resizing
-from tiatoolbox.models.architecture import get_pretrained_model
+from pathlib import Path
+from tiatoolbox.models import DeepFeatureExtractor
+from tiatoolbox.models.architecture.vanilla import CNNBackbone
+from tiatoolbox.models.engine.segmentor import IOSegmentorConfig
+from tiatoolbox.utils.visualization import overlay_prediction_contours
 
-parser = argparse.ArgumentParser(description="Feature Extraction using TIAToolbox ResNet")
-parser.add_argument('--input', type=str, help='Path to nuclei segmentation result (0.dat)', required=True)
-parser.add_argument('--output', type=str, help='Path to save extracted features', required=True)
+# Command-line arguments
+parser = argparse.ArgumentParser(description="Deep Feature Extraction for Nuclei Segmentation Results")
+parser.add_argument('--input', type=str, help='Path to the nuclei segmentation result file (0.dat)', required=True)
+parser.add_argument('--output', type=str, help='Path to save extracted features as CSV', required=True)
+parser.add_argument('--metadata', type=str, help='Path to metadata.pkl file', required=True)
+parser.add_argument('--gpu', action='store_true', help='Use GPU for processing')
 
 args = parser.parse_args()
 
-# Load nuclei segmentation result from 0.dat
-nuclei_result = joblib.load(args.input)  # Load segmentation result from 0.dat
+# Load metadata
+if os.path.exists(args.metadata):
+    with open(args.metadata, 'rb') as f:
+        metadata = joblib.load(f)
+        print(f"Loaded metadata from {args.metadata}")
+else:
+    raise FileNotFoundError(f"Metadata file {args.metadata} not found.")
 
-# Initialize TIAToolbox's pre-trained ResNet model for feature extraction
-resnet_model = get_pretrained_model("resnet50")  # Load pre-trained ResNet50 model
+# Get MPP (Microns Per Pixel) from metadata, default to 0.5 if missing
+mpp = metadata.get('mpp', (0.5, 0.5))
+print(f"Microns per pixel (MPP): {mpp}")
 
-# List to hold extracted features
-feature_list = []
+# Load nuclei segmentation result from the 0.dat file
+if os.path.exists(args.input):
+    nuclei_result = joblib.load(args.input)
+    print(f"Loaded segmentation result from {args.input}")
+else:
+    raise FileNotFoundError(f"Nuclei segmentation result file {args.input} not found.")
 
-# Function to resize the image using OpenCV
-def resize_image(image, size=(224, 224)):
-    return cv2.resize(image, size)
+# Initialize ResNet50 model for feature extraction
+model = CNNBackbone("resnet50")
+extractor = DeepFeatureExtractor(batch_size=16, model=model, num_loader_workers=4)
 
-# Loop through each instance in the nuclei segmentation results
+# Placeholder for features
+features_list = []
+
+# Loop through each instance (nucleus) in the segmentation result
 for instance_id, instance_data in nuclei_result.items():
-    # Each instance contains segmentation details; get the instance image (mask)
-    instance_img = instance_data['img']  # Assuming 'img' stores the instance mask/image
-
-    # Resize instance to 224x224 for ResNet input
-    instance_img_resized = resize_image(instance_img, (224, 224))
-
+    # Extract the bounding box of the nucleus and the instance mask
+    instance_mask = instance_data["mask"]
+    
+    # Resize the mask to match the input size for ResNet (224x224)
+    resized_instance = np.resize(instance_mask, (224, 224, 3))  # Assuming it's a 3-channel mask
+    
     # Run the ResNet model to extract features
-    features = resnet_model.predict(instance_img_resized)
-
-    # Collect features for the current instance
-    feature_list.append(features.flatten())  # Flatten the feature vector
+    extracted_features = extractor.model.predict(resized_instance)
+    
+    # Flatten the feature vector and add it to the list
+    features_list.append(extracted_features.flatten())
 
 # Convert features to a DataFrame
-df = pd.DataFrame(feature_list)
+df = pd.DataFrame(features_list)
+
+# Ensure the output directory exists
+output_path = Path(args.output)
+output_dir = output_path.parent
+output_dir.mkdir(parents=True, exist_ok=True)
 
 # Save extracted features to CSV
 df.to_csv(args.output, index=False)
-
-print(f"Feature extraction completed. Features saved to {args.output}")
+print(f"Feature extraction completed. Results saved to {args.output}")
