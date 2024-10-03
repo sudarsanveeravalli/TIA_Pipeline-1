@@ -6,7 +6,7 @@ save_dir = '/home/ubuntu/bala/bala/ImpartLabs/tmp/'
 os.makedirs(save_dir, exist_ok=True)
 
 # URL to download the sample WSI
-url = "https://tiatoolbox.dcs.warwick.ac.uk/sample_wsis/CMU-1-Small-Region.svs"
+url = "https://tiatoolbox.dcs.warwick.ac.uk/models/slide_graph/cell-composition/TCGA-C8-A278-01Z-00-DX1.188B3FE0-7B20-401A-A6B7-8F1798018162.svs"
 
 # Download and save the WSI
 wsi_path = os.path.join(save_dir, 'CMU-1-Small-Region.svs')
