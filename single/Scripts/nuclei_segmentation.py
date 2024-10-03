@@ -13,6 +13,7 @@ parser.add_argument('--output_dir', type=str, help='Directory to save output res
 parser.add_argument('--metadata', type=str, help='Path to metadata.pkl file', required=True)
 parser.add_argument('--mode', type=str, default="wsi", choices=["wsi", "tile"], help='Processing mode: "wsi" or "tile"')
 parser.add_argument('--gpu', action='store_true', help='Use GPU for processing')
+parser.add_argument('--default_mpp', type=float, help="Default MPP to use if not found in metadata", default=0.5)
 args = parser.parse_args()
 
 # Load metadata
@@ -23,12 +24,15 @@ if os.path.exists(args.metadata):
 else:
     raise FileNotFoundError(f"Metadata file {args.metadata} not found.")
 
-# Get MPP (Microns Per Pixel) from metadata
-mpp = metadata.get('mpp', None)
-if mpp:
-    print(f"Microns per pixel (MPP) from metadata: {mpp}")
+# Get MPP (Microns Per Pixel) from metadata or use default
+mpp = metadata.get('mpp', (args.default_mpp, args.default_mpp))
+
+# Ensure MPP is not empty or None, and if it is, use the default value
+if not mpp or mpp == (None, None):
+    mpp = (args.default_mpp, args.default_mpp)
+    print(f"MPP not found in metadata or is empty, using default MPP: {mpp}")
 else:
-    raise ValueError("No MPP found in the metadata. Please check the metadata file.")
+    print(f"Microns per pixel (MPP) from metadata: {mpp}")
 
 # Initialize NucleusInstanceSegmentor
 segmentor = NucleusInstanceSegmentor(
@@ -45,7 +49,7 @@ output = segmentor.predict(
     imgs=[args.input],
     save_dir=args.output_dir,
     mode=args.mode,
-    resolution={"mpp": mpp},  # Setting MPP explicitly from metadata
+    resolution={"mpp": mpp},  # Setting MPP explicitly from metadata or default
     on_gpu=args.gpu,
     crash_on_exception=True
 )
