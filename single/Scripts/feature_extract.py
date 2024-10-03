@@ -15,7 +15,7 @@ args = parser.parse_args()
 nuclei_result = joblib.load(args.input)  # Load segmentation result from 0.dat
 
 # Initialize TIAToolbox's pre-trained ResNet model for feature extraction
-resnet_model = get_pretrained_model("resnet50", num_classes=2)  # Adjust num_classes based on your task
+resnet_model = get_pretrained_model("resnet50")  # Load pre-trained ResNet50 model
 
 # List to hold extracted features
 feature_list = []
