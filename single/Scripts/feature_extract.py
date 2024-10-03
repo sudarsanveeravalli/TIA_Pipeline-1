@@ -8,31 +8,16 @@ import pandas as pd
 from pathlib import Path
 from tiatoolbox.models import DeepFeatureExtractor
 from tiatoolbox.models.architecture.vanilla import CNNBackbone
-from tiatoolbox.models.engine.segmentor import IOSegmentorConfig
-from tiatoolbox.utils.visualization import overlay_prediction_contours
 
 # Command-line arguments
 parser = argparse.ArgumentParser(description="Deep Feature Extraction for Nuclei Segmentation Results")
 parser.add_argument('--input', type=str, help='Path to the nuclei segmentation result file (0.dat)', required=True)
 parser.add_argument('--output', type=str, help='Path to save extracted features as CSV', required=True)
-parser.add_argument('--metadata', type=str, help='Path to metadata.pkl file', required=True)
 parser.add_argument('--gpu', action='store_true', help='Use GPU for processing')
 
 args = parser.parse_args()
 
-# Load metadata
-if os.path.exists(args.metadata):
-    with open(args.metadata, 'rb') as f:
-        metadata = joblib.load(f)
-        print(f"Loaded metadata from {args.metadata}")
-else:
-    raise FileNotFoundError(f"Metadata file {args.metadata} not found.")
-
-# Get MPP (Microns Per Pixel) from metadata, default to 0.5 if missing
-mpp = metadata.get('mpp', (0.5, 0.5))
-print(f"Microns per pixel (MPP): {mpp}")
-
-# Load nuclei segmentation result from the 0.dat file
+# Load nuclei segmentation result from the .dat file
 if os.path.exists(args.input):
     nuclei_result = joblib.load(args.input)
     print(f"Loaded segmentation result from {args.input}")
