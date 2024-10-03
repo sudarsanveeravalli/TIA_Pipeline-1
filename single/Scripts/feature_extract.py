@@ -2,8 +2,8 @@ import joblib
 import numpy as np
 import pandas as pd
 import argparse
+import cv2  # Using OpenCV for resizing
 from tiatoolbox.models.architecture import get_pretrained_model
-from tiatoolbox.utils.transforms import img_resize
 
 parser = argparse.ArgumentParser(description="Feature Extraction using TIAToolbox ResNet")
 parser.add_argument('--input', type=str, help='Path to nuclei segmentation result (0.dat)', required=True)
@@ -20,13 +20,17 @@ resnet_model = get_pretrained_model("resnet50", num_classes=2)  # Adjust num_cla
 # List to hold extracted features
 feature_list = []
 
+# Function to resize the image using OpenCV
+def resize_image(image, size=(224, 224)):
+    return cv2.resize(image, size)
+
 # Loop through each instance in the nuclei segmentation results
 for instance_id, instance_data in nuclei_result.items():
     # Each instance contains segmentation details; get the instance image (mask)
     instance_img = instance_data['img']  # Assuming 'img' stores the instance mask/image
 
     # Resize instance to 224x224 for ResNet input
-    instance_img_resized = img_resize(instance_img, (224, 224))
+    instance_img_resized = resize_image(instance_img, (224, 224))
 
     # Run the ResNet model to extract features
     features = resnet_model.predict(instance_img_resized)
