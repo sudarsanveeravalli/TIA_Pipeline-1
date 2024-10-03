@@ -21,6 +21,7 @@ args = parser.parse_args()
 if os.path.exists(args.input):
     nuclei_result = joblib.load(args.input)
     print(f"Loaded segmentation result from {args.input}")
+    print(nuclei_result)
 else:
     raise FileNotFoundError(f"Nuclei segmentation result file {args.input} not found.")
 
@@ -47,6 +48,7 @@ for instance_id, instance_data in nuclei_result.items():
 
 # Convert features to a DataFrame
 df = pd.DataFrame(features_list)
+print(df)
 
 # Ensure the output directory exists
 output_path = Path(args.output)
