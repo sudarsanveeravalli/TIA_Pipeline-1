@@ -3,9 +3,8 @@
 import os
 import argparse
 import cv2  # OpenCV for handling regular images
-from tiatoolbox.tools.tissuemask import MorphologicalMasker
 from tiatoolbox.wsicore.wsireader import WSIReader
-from PIL import Image, TiffTags
+from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -67,24 +66,13 @@ if not mask_thumb.flags.writeable:
     mask_thumb = np.copy(mask_thumb)
     mask_thumb.flags.writeable = True
 
-# Convert the mask to a PIL Image
+# Convert the mask to a PIL Image and save as PNG
 mask_image_pil = Image.fromarray(mask_thumb)
-
-# Set TIFF-specific metadata (e.g., resolution)
-tiff_metadata = {
-    TiffTags.RESOLUTION_UNIT: 3,  # 1 = no unit, 2 = inch, 3 = centimeter
-    TiffTags.X_RESOLUTION: (1 / mpp[0]),  # Convert MPP to DPI
-    TiffTags.Y_RESOLUTION: (1 / mpp[1]),
-    TiffTags.SOFTWARE: 'TissueMaskingTool',
-    TiffTags.DOCUMENT_NAME: args.input,  # Store input file reference
-}
-
-# Generate the full path for the output mask file
-mask_filename = f"{input_filename}_tissue_mask.tiff"
+mask_filename = f"{input_filename}_tissue_mask.png"
 mask_path = os.path.join(output_dir, mask_filename)
 
-# Save the tissue mask as a TIFF image, embedding metadata
-mask_image_pil.save(mask_path, tiffinfo=tiff_metadata)
+# Save the tissue mask as a PNG image
+mask_image_pil.save(mask_path)
 
 # Optionally, visualize the results (useful for debugging)
 plt.figure(figsize=(10, 5))
