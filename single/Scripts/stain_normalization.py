@@ -5,14 +5,15 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from PIL import Image
 import numpy as np
+import pickle
 from tiatoolbox import data, logger
 from tiatoolbox.tools import stainnorm
 from tiatoolbox.wsicore.wsireader import WSIReader
 
 # Parse command-line arguments
-parser = argparse.ArgumentParser(description="Stain Normalization with TIFF output")
+parser = argparse.ArgumentParser(description="Stain Normalization with PNG output and metadata storage")
 parser.add_argument('--input', type=str, required=True, help='Path to input WSI file')
-parser.add_argument('--output', type=str, required=True, help='Path to save normalized WSI image as TIFF')
+parser.add_argument('--output', type=str, required=True, help='Path to save normalized WSI image as PNG')
 parser.add_argument('--reference', type=str, help='Path to reference image for stain normalization', default=None)
 parser.add_argument('--method', type=str, choices=['vahadane', 'macenko', 'reinhard', 'ruifrok'], default='vahadane', help='Stain normalization method to use')
 
@@ -64,18 +65,21 @@ output_path = Path(args.output)
 output_dir = output_path.parent
 output_dir.mkdir(parents=True, exist_ok=True)
 
-# Convert to RGB format if necessary (to ensure compatibility with TIFF format)
+# Convert to RGB format if necessary (to ensure compatibility with PNG format)
 if normalized_image.shape[-1] == 4:  # RGBA to RGB if needed
     normalized_image = normalized_image[:, :, :3]
 
-# Convert normalized_image (NumPy array) to PIL Image for saving as TIFF
+# Convert normalized_image (NumPy array) to PIL Image for saving as PNG
 normalized_image_pil = Image.fromarray((normalized_image * 255).astype(np.uint8))
 
-# Define resolution metadata based on MPP (Microns Per Pixel)
-x_resolution = 1 / metadata.get('mpp', [0.5])[0]  # Default to 0.5 MPP if missing
-y_resolution = 1 / metadata.get('mpp', [0.5])[1]
+# Save the normalized image as PNG
+png_output_path = output_path.with_suffix('.png')
+normalized_image_pil.save(png_output_path)
 
-# Save the normalized image as TIFF, embedding resolution metadata
-normalized_image_pil.save(output_path, resolution=(x_resolution, y_resolution), dpi=(x_resolution, y_resolution))
+# Store the metadata for later use (e.g., segmentation)
+metadata_path = output_dir / 'metadata.pkl'
+with open(metadata_path, 'wb') as f:
+    pickle.dump(metadata, f)
 
-logger.info(f"Stain normalization completed. Normalized TIFF image saved to {output_path}")
+logger.info(f"Stain normalization completed. Normalized PNG image saved to {png_output_path}")
+logger.info(f"Metadata saved to {metadata_path}")
