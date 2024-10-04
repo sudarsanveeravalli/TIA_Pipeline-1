@@ -2,7 +2,7 @@ from tiatoolbox import data
 import os
 
 # Directory to save the downloaded WSI
-save_dir = '/home/path01/bala@path23/bala/ImpartLabs/tmp/input/'
+save_dir = '/home/path02/python_envs/ImpartLabs/tmp/input'
 os.makedirs(save_dir, exist_ok=True)
 
 # URL to download the sample WSI
