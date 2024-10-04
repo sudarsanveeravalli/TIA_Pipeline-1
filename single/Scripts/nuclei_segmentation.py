@@ -117,7 +117,7 @@ if args.mode == "tile":
 
 print(f"Segmentation completed. Results saved in {args.output_dir}")
 
-tile_preds = joblib.load(f"{tile_output[0][1]}.dat")
+tile_preds = joblib.load(f"{output[0][1]}.dat")
 logger.info(f"Number of detected nuclei: {len(tile_preds)}")
 
 # Extracting the nucleus IDs and select the first one
