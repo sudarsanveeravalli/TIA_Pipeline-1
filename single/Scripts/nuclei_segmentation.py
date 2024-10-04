@@ -35,6 +35,10 @@ if not mpp or mpp == (None, None):
 else:
     print(f"Microns per pixel (MPP) from metadata: {mpp}")
 
+
+output_dir = '/home/path02/python_envs/ImpartLabs/tmp/results/nuclei_results_testrun/image.tiff'
+tiff_input = convert_png_to_tiff(args.input, args.input, metadata=metadata)
+
 # Initialize NucleusInstanceSegmentor
 segmentor = NucleusInstanceSegmentor(
     pretrained_model="hovernet_fast-pannuke",  # Use "hovernet_original-kumar" if needed
