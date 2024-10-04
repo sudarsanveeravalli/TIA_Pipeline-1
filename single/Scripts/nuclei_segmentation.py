@@ -35,7 +35,7 @@ print(f"Microns per pixel (MPP) used: {mpp_value}")
 
 # Initialize NucleusInstanceSegmentor
 segmentor = NucleusInstanceSegmentor(
-    pretrained_model="hovernet_fast-pannuke",
+    pretrained_model="hovernet_fast-monusac",  # Try a different model
     num_loader_workers=2,
     num_postproc_workers=2,
     batch_size=1,
@@ -57,14 +57,22 @@ except Exception as e:
     print(f"Segmentation failed: {e}")
     exit(1)
 
-# Check if output is empty
-if not output:
-    print("No segmentation results were produced.")
+# Print the output variable
+print(f"Segmentation output: {output}")
+
+# Get the output directory for the first image
+output_dir_for_image = output[0][1]  # This should be a directory
+
+# Define the path to the instance map file
+inst_map_path = os.path.join(output_dir_for_image, 'inst_map.dat')
+
+# Check if the result file exists
+if not os.path.exists(inst_map_path):
+    print(f"Result file not found: {inst_map_path}")
     exit(1)
 
 # Load the segmentation results
-result_file = output[0][1]
-nuclei_predictions = joblib.load(result_file)
+nuclei_predictions = joblib.load(inst_map_path)
 
 # Load the input PNG image
 tile_img = plt.imread(args.input)
@@ -72,7 +80,7 @@ tile_img = plt.imread(args.input)
 # Visualization
 overlaid_predictions = overlay_prediction_contours(
     canvas=tile_img,
-    inst_dict=nuclei_predictions,
+    inst_dict={'inst_map': nuclei_predictions},
     draw_dot=False,
     line_thickness=2
 )
