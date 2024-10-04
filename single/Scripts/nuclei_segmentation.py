@@ -116,3 +116,33 @@ if args.mode == "tile":
     plt.show()
 
 print(f"Segmentation completed. Results saved in {args.output_dir}")
+
+tile_preds = joblib.load(f"{tile_output[0][1]}.dat")
+logger.info(f"Number of detected nuclei: {len(tile_preds)}")
+
+# Extracting the nucleus IDs and select the first one
+nuc_id_list = list(tile_preds.keys())
+selected_nuc_id = nuc_id_list[0]
+logger.info(f"Nucleus prediction structure for nucleus ID: {selected_nuc_id}")
+sample_nuc = tile_preds[selected_nuc_id]
+sample_nuc_keys = list(sample_nuc)
+logger.info(
+    "Keys in the output dictionary: [%s, %s, %s, %s, %s]",
+    sample_nuc_keys[0],
+    sample_nuc_keys[1],
+    sample_nuc_keys[2],
+    sample_nuc_keys[3],
+    sample_nuc_keys[4],
+)
+logger.info(
+    "Bounding box: (%d, %d, %d, %d)",
+    sample_nuc["box"][0],
+    sample_nuc["box"][1],
+    sample_nuc["box"][2],
+    sample_nuc["box"][3],
+)
+logger.info(
+    "Centroid: (%d, %d)",
+    sample_nuc["centroid"][0],
+    sample_nuc["centroid"][1],
+)
