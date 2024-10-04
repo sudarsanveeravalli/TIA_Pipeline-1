@@ -40,7 +40,7 @@ segmentor = NucleusInstanceSegmentor(
     pretrained_model="hovernet_fast-monusac",  # Try a different model if needed
     num_loader_workers=2,
     num_postproc_workers=2,
-    batch_size=1,
+    batch_size=4,
     auto_generate_mask=False
 )
 
@@ -56,10 +56,10 @@ if args.mode == "wsi":
             imgs=[wsi],
             save_dir=args.output_dir,
             mode='wsi',
-            on_gpu=args.gpu,
+            on_gpu=,
             crash_on_exception=False,
-            resolution={"mpp": mpp_value},  # Set resolution explicitly
-            units="mpp"
+
+            
         )
     except Exception as e:
         print(f"Segmentation failed for WSI: {e}")
@@ -72,10 +72,8 @@ else:
             imgs=[args.input],
             save_dir=args.output_dir,
             mode='tile',
-            on_gpu=args.gpu,
-            crash_on_exception=False,
-            resolution={"mpp": mpp_value},  # Set resolution explicitly
-            units="mpp"
+            on_gpu= True,
+            crash_on_exception= False,
         )
     except Exception as e:
         print(f"Segmentation failed for Tile: {e}")
