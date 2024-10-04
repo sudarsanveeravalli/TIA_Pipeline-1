@@ -2,6 +2,7 @@ import tifffile
 from PIL import Image
 import joblib
 import os
+import numpy as np
 
 def load_metadata(metadata_path):
     """Load metadata from a pickle file."""
@@ -19,7 +20,7 @@ def convert_png_to_tiff(input_path, output_path, metadata=None, mpp=None):
     :param input_path: Path to the input PNG image
     :param output_path: Path to save the output TIFF image
     :param metadata: Metadata dictionary from which MPP can be extracted
-    :param mpp: Tuple specifying Microns Per Pixel (MPP) for X and Y axes, defaults to None
+    :param mpp: Tuple specifying Microns Per Pixel (MPP) for X and Y axes
     :return: Path to the saved TIFF image
     """
     if input_path.endswith(".png"):
@@ -27,18 +28,24 @@ def convert_png_to_tiff(input_path, output_path, metadata=None, mpp=None):
         img = Image.open(input_path)
         img = img.convert("RGB")  # Ensure it's in the correct mode (RGB)
         
-        # Save the image as a TIFF file
-        tiff_output_path = output_path.replace(".png", ".tiff")
-        img.save(tiff_output_path, format='TIFF')
-
-        # Embed MPP from metadata or provided MPP
-        if metadata:
-            mpp = metadata.get('mpp', mpp)
+        # Convert to NumPy array
+        image_data = np.array(img)
         
+        # Extract MPP from metadata or provided MPP
+        if metadata and 'mpp' in metadata:
+            mpp = metadata['mpp']
+        
+        # Prepare the TIFF output path
+        tiff_output_path = output_path.replace(".png", ".tiff")
+        
+        # Prepare the metadata description
+        description = None
         if mpp:
+            description = f'mpp_x={mpp[0]}, mpp_y={mpp[1]}'
             print(f"Embedding MPP into TIFF: {mpp}")
-            with tifffile.TiffWriter(tiff_output_path, append=True) as tif:
-                tif.save(tiff_output_path, description=f'mpp_x={mpp[0]}, mpp_y={mpp[1]}')
+        
+        # Save the image as TIFF with embedded metadata
+        tifffile.imwrite(tiff_output_path, image_data, description=description)
 
         print(f"Converted image saved at: {tiff_output_path}")
         return tiff_output_path
