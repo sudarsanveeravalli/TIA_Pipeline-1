@@ -4,7 +4,6 @@ import joblib
 import matplotlib.pyplot as plt
 from tiatoolbox.models.engine.nucleus_instance_segmentor import NucleusInstanceSegmentor
 from tiatoolbox.utils.visualization import overlay_prediction_contours
-from tiatoolbox.wsicore.wsireader import WSIReader
 from image_conversion import convert_png_to_tiff, load_metadata
 
 # Parsing input arguments
@@ -17,28 +16,25 @@ parser.add_argument('--gpu', action='store_true', help='Use GPU for processing')
 parser.add_argument('--default_mpp', type=float, help="Default MPP to use if not found in metadata", default=0.5)
 args = parser.parse_args()
 
+# Ensure the output directory exists
+os.makedirs(args.output_dir, exist_ok=True)
+
 # Load metadata
-if os.path.exists(args.metadata):
-    with open(args.metadata, 'rb') as f:
-        metadata = joblib.load(f)
-        print(f"Loaded metadata from {args.metadata}")
-else:
-    raise FileNotFoundError(f"Metadata file {args.metadata} not found.")
-print(metadata)
+metadata = load_metadata(args.metadata)
 
 # Get MPP (Microns Per Pixel) from metadata or use default
 mpp = metadata.get('mpp', (args.default_mpp, args.default_mpp))
 
-# Ensure MPP is not empty or None, and if it is, use the default value
-if not mpp or mpp == (None, None):
+# Ensure MPP is valid
+if not isinstance(mpp, tuple) or len(mpp) != 2 or not all(isinstance(x, (int, float)) for x in mpp):
     mpp = (args.default_mpp, args.default_mpp)
-    print(f"MPP not found in metadata or is empty, using default MPP: {mpp}")
+    print(f"Invalid MPP in metadata, using default MPP: {mpp}")
 else:
     print(f"Microns per pixel (MPP) from metadata: {mpp}")
 
-
-output_dir = '/home/path02/python_envs/ImpartLabs/tmp/results/nuclei_results_testrun/image.tiff'
-tiff_input = convert_png_to_tiff(args.input, args.input, metadata=metadata)
+# Convert PNG to TIFF before segmentation
+tiff_input_path = args.input.replace('.png', '.tiff')
+tiff_input = convert_png_to_tiff(args.input, tiff_input_path, metadata=metadata)
 
 # Initialize NucleusInstanceSegmentor
 segmentor = NucleusInstanceSegmentor(
@@ -49,24 +45,24 @@ segmentor = NucleusInstanceSegmentor(
     auto_generate_mask=False
 )
 
-# Run the segmentation with manually set MPP for WSIs
-print(f"Running segmentation on {args.input}")
+# Run the segmentation
+print(f"Running segmentation on {tiff_input}")
 output = segmentor.predict(
-    imgs=[args.input],
+    imgs=[tiff_input],
     save_dir=args.output_dir,
     mode=args.mode,
     on_gpu=args.gpu,
     crash_on_exception=True
 )
 
-# Load the segmentation results (dictionary with instance segmentation details)
-result_file = f"{output[0][1]}.dat"
+# Load the segmentation results
+result_file = output[0][1]
 nuclei_predictions = joblib.load(result_file)
 
-# If desired, visualize one of the results (for tiles)
+# Visualization for tile mode
 if args.mode == "tile":
-    # Load the input image
-    tile_img = plt.imread(args.input)
+    # Load the input TIFF image
+    tile_img = plt.imread(tiff_input)
 
     # Define color mapping for visualization
     color_dict = {
@@ -87,10 +83,10 @@ if args.mode == "tile":
         line_thickness=2
     )
 
-    # Show and save the overlaid image
+    # Save and show the overlaid image
     plt.imshow(overlaid_predictions)
     plt.axis('off')
-    plt.savefig(f"{args.output_dir}/nuclei_overlay.png")
+    plt.savefig(os.path.join(args.output_dir, "nuclei_overlay.png"), bbox_inches='tight', pad_inches=0)
     plt.show()
 
 print(f"Segmentation completed. Results saved in {args.output_dir}")
