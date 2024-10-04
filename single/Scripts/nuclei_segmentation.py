@@ -23,6 +23,7 @@ if os.path.exists(args.metadata):
         print(f"Loaded metadata from {args.metadata}")
 else:
     raise FileNotFoundError(f"Metadata file {args.metadata} not found.")
+print(metadata)
 
 # Get MPP (Microns Per Pixel) from metadata or use default
 mpp = metadata.get('mpp', (args.default_mpp, args.default_mpp))
@@ -39,7 +40,6 @@ segmentor = NucleusInstanceSegmentor(
     pretrained_model="hovernet_fast-pannuke",  # Use "hovernet_original-kumar" if needed
     num_loader_workers=2,
     num_postproc_workers=2,
-    resolution={"mpp": mpp},
     batch_size=4,
     auto_generate_mask=False
 )
