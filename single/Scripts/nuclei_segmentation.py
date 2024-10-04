@@ -2,6 +2,7 @@ import argparse
 import os
 import joblib
 import matplotlib.pyplot as plt
+import datetime
 from tiatoolbox.models.engine.nucleus_instance_segmentor import NucleusInstanceSegmentor
 from tiatoolbox.utils.visualization import overlay_prediction_contours
 from image_conversion import convert_png_to_tiff, load_metadata
@@ -16,8 +17,16 @@ parser.add_argument('--gpu', action='store_true', help='Use GPU for processing')
 parser.add_argument('--default_mpp', type=float, help="Default MPP to use if not found in metadata", default=0.5)
 args = parser.parse_args()
 
-# Ensure the output directory exists
-os.makedirs(args.output_dir, exist_ok=True)
+# Generate a unique output directory
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+unique_output_dir = os.path.join(args.output_dir, f"nuclei_results_{timestamp}")
+args.output_dir = unique_output_dir  # Update args.output_dir to the new unique directory
+
+# Ensure the unique output directory does not exist
+if not os.path.exists(args.output_dir):
+    os.makedirs(args.output_dir)
+else:
+    raise ValueError(f"Output directory already exists: {args.output_dir}")
 
 # Load metadata
 metadata = load_metadata(args.metadata)
@@ -38,7 +47,7 @@ tiff_input = convert_png_to_tiff(args.input, tiff_input_path, metadata=metadata)
 
 # Initialize NucleusInstanceSegmentor
 segmentor = NucleusInstanceSegmentor(
-    pretrained_model="hovernet_fast-pannuke",  # Use "hovernet_original-kumar" if needed
+    pretrained_model="hovernet_fast-pannuke",
     num_loader_workers=2,
     num_postproc_workers=2,
     batch_size=4,
