@@ -39,6 +39,7 @@ segmentor = NucleusInstanceSegmentor(
     pretrained_model="hovernet_fast-pannuke",  # Use "hovernet_original-kumar" if needed
     num_loader_workers=2,
     num_postproc_workers=2,
+    resolution={"mpp": mpp},
     batch_size=4,
     auto_generate_mask=False
 )
