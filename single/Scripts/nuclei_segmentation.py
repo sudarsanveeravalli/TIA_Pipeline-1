@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from tiatoolbox.models.engine.nucleus_instance_segmentor import NucleusInstanceSegmentor
 from tiatoolbox.utils.visualization import overlay_prediction_contours
 from tiatoolbox.wsicore.wsireader import WSIReader
+from image_conversion import convert_png_to_tiff, load_metadata
 
 # Parsing input arguments
 parser = argparse.ArgumentParser(description="Nuclei Segmentation using HoVerNet")
