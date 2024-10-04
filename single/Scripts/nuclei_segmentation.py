@@ -50,7 +50,7 @@ output = segmentor.predict(
     imgs=[args.input],
     save_dir=args.output_dir,
     mode=args.mode,
-    resolution={"mpp": mpp},  # Setting MPP explicitly from metadata or default
+    resolution={"mpp": (mpp,mpp)},  # Setting MPP explicitly from metadata or default
     on_gpu=args.gpu,
     crash_on_exception=True
 )
