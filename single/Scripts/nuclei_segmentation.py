@@ -31,11 +31,9 @@ else:
     print(f"Microns per pixel (MPP) from metadata: {mpp}")
 
 # Convert PNG to TIFF before segmentation
-# Save the TIFF in the same directory as the input image to avoid creating args.output_dir
 tiff_input_path = os.path.splitext(args.input)[0] + '.tiff'
-tiff_input = convert_png_to_tiff(args.input, tiff_input_path, metadata=metadata)
+tiff_input = convert_png_to_tiff(args.input, tiff_input_path)
 
-# Ensure that args.output_dir is not created before segmentor.predict
 # Do not create the output directory here
 
 # Initialize NucleusInstanceSegmentor
@@ -47,17 +45,21 @@ segmentor = NucleusInstanceSegmentor(
     auto_generate_mask=False
 )
 
-# Run the segmentation
+# Run the segmentation with manually set MPP
 print(f"Running segmentation on {tiff_input}")
 output = segmentor.predict(
     imgs=[tiff_input],
     save_dir=args.output_dir,
     mode=args.mode,
     on_gpu=args.gpu,
-    crash_on_exception=True
+    crash_on_exception=True,
+    resolution=mpp,      # Specify MPP here
+    units="mpp",         # Indicate units are in MPP
 )
 
-# After segmentation, args.output_dir now exists
+# After segmentation, you can create the output directory if needed
+os.makedirs(args.output_dir, exist_ok=True)
+
 # Load the segmentation results
 result_file = output[0][1]
 nuclei_predictions = joblib.load(result_file)
@@ -85,9 +87,6 @@ if args.mode == "tile":
         type_colours=color_dict,
         line_thickness=2
     )
-
-    # Now it's safe to create the output directory if needed
-    os.makedirs(args.output_dir, exist_ok=True)
 
     # Save and show the overlaid image
     plt.imshow(overlaid_predictions)
