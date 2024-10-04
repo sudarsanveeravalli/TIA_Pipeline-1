@@ -37,7 +37,7 @@ print(f"Microns per pixel (MPP) used: {mpp_value}")
 
 # Initialize NucleusInstanceSegmentor
 segmentor = NucleusInstanceSegmentor(
-    pretrained_model="hovernet_fast-monusac",  # Try a different model if needed
+    pretrained_model="hovernet_fast-pannuke",
     num_loader_workers=2,
     num_postproc_workers=2,
     batch_size=4,
