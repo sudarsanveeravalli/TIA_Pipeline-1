@@ -56,7 +56,7 @@ if args.mode == "wsi":
             imgs=[wsi],
             save_dir=args.output_dir,
             mode='wsi',
-            on_gpu=,
+            on_gpu= True,
             crash_on_exception=False,
 
             
