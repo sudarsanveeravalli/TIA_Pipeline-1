@@ -17,17 +17,6 @@ parser.add_argument('--gpu', action='store_true', help='Use GPU for processing')
 parser.add_argument('--default_mpp', type=float, help="Default MPP to use if not found in metadata", default=0.5)
 args = parser.parse_args()
 
-# Generate a unique output directory
-timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-unique_output_dir = os.path.join(args.output_dir, f"nuclei_results_{timestamp}")
-args.output_dir = unique_output_dir  # Update args.output_dir to the new unique directory
-
-# Ensure the unique output directory does not exist
-if not os.path.exists(args.output_dir):
-    os.makedirs(args.output_dir)
-else:
-    raise ValueError(f"Output directory already exists: {args.output_dir}")
-
 # Load metadata
 metadata = load_metadata(args.metadata)
 
@@ -42,8 +31,12 @@ else:
     print(f"Microns per pixel (MPP) from metadata: {mpp}")
 
 # Convert PNG to TIFF before segmentation
-tiff_input_path = args.input.replace('.png', '.tiff')
+# Save the TIFF in the same directory as the input image to avoid creating args.output_dir
+tiff_input_path = os.path.splitext(args.input)[0] + '.tiff'
 tiff_input = convert_png_to_tiff(args.input, tiff_input_path, metadata=metadata)
+
+# Ensure that args.output_dir is not created before segmentor.predict
+# Do not create the output directory here
 
 # Initialize NucleusInstanceSegmentor
 segmentor = NucleusInstanceSegmentor(
@@ -64,6 +57,7 @@ output = segmentor.predict(
     crash_on_exception=True
 )
 
+# After segmentation, args.output_dir now exists
 # Load the segmentation results
 result_file = output[0][1]
 nuclei_predictions = joblib.load(result_file)
@@ -91,6 +85,9 @@ if args.mode == "tile":
         type_colours=color_dict,
         line_thickness=2
     )
+
+    # Now it's safe to create the output directory if needed
+    os.makedirs(args.output_dir, exist_ok=True)
 
     # Save and show the overlaid image
     plt.imshow(overlaid_predictions)
