@@ -27,7 +27,7 @@ wsi_reader = WSIReader.open(args.input)
 metadata = wsi_reader.info.as_dict()  # Save metadata to reapply later
 
 # Extract full-resolution WSI or appropriate resolution based on requirements
-slide_image = wsi_reader.read_region(location=(0, 0), level=0, size=wsi_reader.slide_dimensions(resolution= 2.0, units="mpp")[0]) # Changed from .5 to 2.0
+slide_image = wsi_reader.read_region(location=(0, 0), level=0, size=wsi_reader.slide_dimensions(resolution= 1.0, units="mpp")[0]) # Changed from .5 to 2.0
 
 # Create a writable copy of the image
 slide_image_writable = np.array(slide_image)  # Convert to NumPy array
