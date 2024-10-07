@@ -20,6 +20,10 @@ parser.add_argument('--gpu', action='store_true', help='Use GPU for processing')
 parser.add_argument('--default_mpp', type=float, help="Default MPP if not found in metadata", default=0.5)
 args = parser.parse_args()
 
+if not args.gpu:
+    args.gpu = torch.cuda.is_available()
+logger.info(f"Using GPU for processing: {args.gpu}")
+
 # Load metadata
 metadata = joblib.load(args.metadata)
 mpp = metadata.get('mpp', args.default_mpp)
