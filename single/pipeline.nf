@@ -18,9 +18,10 @@ process read_wsi {
         path wsi_file
 
     output:
-        path "thumbnail.png", emit: wsi_thumbnail
+        path "thumbnail.png"
 
     publishDir "${params.outdir}", mode: 'copy'
+
     script:
     """
     python ${params.scripts}/read_wsi.py --input $wsi_file --output thumbnail.png
@@ -34,12 +35,13 @@ process stain_normalization {
         path wsi_file
 
     output:
-        path "normalized_wsi.png", emit: normalized_wsi
+        path "normalized_wsi.png"
 
     publishDir "${params.outdir}", mode: 'copy'
+
     script:
     """
-    python ${params.scripts}/stain_normalization.py --input $wsi_file --output normalized_wsi.png
+    python ${params.scripts}/stain_normalization.py --input $wsi_file --output normalized_wsi.png --method vahadane
     """
 }
 
@@ -50,12 +52,13 @@ process tissue_mask {
         path normalized_wsi
 
     output:
-        path "tissue_mask.png", emit: tissue_mask
+        path "tissue_mask.png"
 
     publishDir "${params.outdir}", mode: 'copy'
+
     script:
     """
-    python ${params.scripts}/tissue_mask.py --input $normalized_wsi --output tissue_mask.png
+    python ${params.scripts}/tissue_mask.py --input $normalized_wsi --output tissue_mask.png --resolution 1.25 --units power
     """
 }
 
@@ -67,9 +70,10 @@ process nuclei_segmentation {
         path tissue_mask
 
     output:
-        path "nuclei_result.pkl", emit: nuclei_result
+        path "nuclei_result.pkl"
 
     publishDir "${params.outdir}", mode: 'copy'
+
     script:
     """
     python ${params.scripts}/hovernet.py --input $normalized_wsi --mask $tissue_mask --output nuclei_result.pkl
@@ -83,9 +87,10 @@ process feature_extraction {
         path nuclei_result
 
     output:
-        path "features.csv", emit: extracted_features
+        path "features.csv"
 
     publishDir "${params.outdir}", mode: 'copy'
+
     script:
     """
     python ${params.scripts}/feature_extract.py --input $nuclei_result --output features.csv
@@ -97,15 +102,18 @@ workflow {
     // Start with the WSI file
     def wsi_thumbnail = read_wsi(wsi_file)
 
-    // Perform stain normalization
-    def norm_wsi = stain_normalization(wsi_thumbnail)
+    // Perform stain normalization on the original WSI file
+    def norm_wsi = stain_normalization(wsi_file)
 
     // Create tissue mask using normalized WSI
     def tissue_mask_im = tissue_mask(norm_wsi)
 
     // Perform nuclei segmentation
-    nuclei_segmentation(
+    def nuclei_res = nuclei_segmentation(
         norm_wsi,
         tissue_mask_im
     )
+
+    // (Optional) Perform feature extraction
+    feature_extraction(nuclei_res)
 }
