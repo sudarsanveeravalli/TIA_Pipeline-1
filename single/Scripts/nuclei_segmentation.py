@@ -22,7 +22,6 @@ parser.add_argument('--gpu', action='store_true', help='Use GPU for processing')
 parser.add_argument('--default_mpp', type=float, help="Default MPP if not found in metadata", default=0.5)
 args = parser.parse_args()
 
-
 if not args.gpu:
     args.gpu = torch.cuda.is_available()
 logger.info(f"Using GPU for processing: {args.gpu}")
@@ -30,9 +29,13 @@ logger.info(f"Using GPU for processing: {args.gpu}")
 logger.debug(f"Input arguments: {args}")
 
 # Load metadata
-logger.info(f"Loading metadata from {args.metadata}")
-metadata = joblib.load(args.metadata)
-mpp = metadata.get('mpp', args.default_mpp)
+if args.metadata:
+    logger.info(f"Loading metadata from {args.metadata}")
+    metadata = joblib.load(args.metadata)
+    mpp = metadata.get('mpp', args.default_mpp)
+else:
+    logger.warning(f"No metadata provided. Using default MPP: {args.default_mpp}")
+    mpp = args.default_mpp
 
 # Ensure MPP is valid and calculate a single MPP value
 if isinstance(mpp, tuple) and len(mpp) == 2:
@@ -56,9 +59,9 @@ segmentor = NucleusInstanceSegmentor(
 )
 
 # Process depending on the mode (wsi or tile)
-if args.mode == "wsi":
-    logger.info(f"Running segmentation on WSI: {args.input}")
-    try:
+try:
+    if args.mode == "wsi":
+        logger.info(f"Running segmentation on WSI: {args.input}")
         wsi = WSIReader.open(args.input)
         output = segmentor.predict(
             imgs=[wsi],
@@ -67,12 +70,8 @@ if args.mode == "wsi":
             on_gpu=args.gpu,
             crash_on_exception=False
         )
-    except Exception as e:
-        logger.error(f"Segmentation failed for WSI: {e}")
-        exit(1)
-else:
-    logger.info(f"Running segmentation on Tile: {args.input}")
-    try:
+    else:
+        logger.info(f"Running segmentation on Tile: {args.input}")
         output = segmentor.predict(
             imgs=[args.input],
             save_dir=args.output_dir,
@@ -80,28 +79,27 @@ else:
             on_gpu=args.gpu,
             crash_on_exception=False
         )
-    except Exception as e:
-        logger.error(f"Segmentation failed for Tile: {e}")
-        exit(1)
-
+except Exception as e:
+    logger.error(f"Segmentation failed: {e}")
+    exit(1)
 
 logger.debug(f"Segmentation output: {output}")
 
-# Get the output directory for the first image
-output_dir_for_image = output[0][1]
-logger.info(f"Segmentation results saved in: {output_dir_for_image}")
+# Assuming 'output' contains a directory structure for results, retrieve the 0.dat file
+result_dir = output[0][1]
+logger.info(f"Segmentation results saved in: {result_dir}")
 
-# Define the path to the instance map file
-inst_map_path = os.path.join(output_dir_for_image, 'file_map.dat')
+# Path to the 0.dat file (instance map)
+dat_file_path = os.path.join(result_dir, '0.dat')
 
 # Check if the result file exists
-if not os.path.exists(inst_map_path):
-    logger.error(f"Result file not found: {inst_map_path}")
+if not os.path.exists(dat_file_path):
+    logger.error(f"Result file not found: {dat_file_path}")
     exit(1)
 
 # Load the segmentation results
-logger.info(f"Loading segmentation results from {inst_map_path}")
-nuclei_predictions = joblib.load(inst_map_path)
+logger.info(f"Loading segmentation results from {dat_file_path}")
+nuclei_predictions = joblib.load(dat_file_path)
 
 # Visualization (for tiles)
 if args.mode == "tile":
@@ -119,7 +117,6 @@ if args.mode == "tile":
     logger.info(f"Nuclei overlay image saved at {overlay_path}")
     plt.show()
 
-
 logger.info(f"Number of detected nuclei: {len(nuclei_predictions)}")
 
 # Extracting the nucleus IDs and selecting the first one
@@ -127,11 +124,9 @@ nuc_id_list = list(nuclei_predictions.keys())
 selected_nuc_id = nuc_id_list[0]
 logger.info(f"Nucleus prediction structure for nucleus ID: {selected_nuc_id}")
 
-
 sample_nuc = nuclei_predictions[selected_nuc_id]
 sample_nuc_keys = list(sample_nuc)
 logger.info(f"Keys in the output dictionary: {sample_nuc_keys}")
-
 
 logger.info(
     f"Bounding box: ({sample_nuc['box'][0]}, {sample_nuc['box'][1]}, {sample_nuc['box'][2]}, {sample_nuc['box'][3]})"
