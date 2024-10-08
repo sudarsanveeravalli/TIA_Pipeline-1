@@ -29,7 +29,7 @@ logger.debug(f"Input arguments: {args}")
 
 # Load metadata
 logger.info(f"Loading metadata from {args.metadata}")
-metadata = joblib.load(args.metadata)
+metadata = joblib.load(args.metadata) if args.metadata else {}
 mpp = metadata.get('mpp', args.default_mpp)
 
 # Ensure MPP is valid and calculate a single MPP value
@@ -84,8 +84,8 @@ else:
 
 logger.debug(f"Segmentation output: {output}")
 
-# Get the output path directly without looking for nested folders
-output_dir_for_image = args.output_dir
+# Get the output directory for the first image
+output_dir_for_image = output[0][1]
 logger.info(f"Segmentation results saved in: {output_dir_for_image}")
 
 # Define the path to the instance map file
@@ -99,10 +99,19 @@ if not os.path.exists(inst_map_path):
 # Load the segmentation results
 logger.info(f"Loading segmentation results from {inst_map_path}")
 nuclei_predictions = joblib.load(inst_map_path)
-print (nuclei_predictions)
+
 # Visualization (for tiles)
 if args.mode == "tile":
     tile_img = plt.imread(args.input)
+
+    for nucleus_id, nucleus_data in nuclei_predictions.items():
+        if 'contour' in nucleus_data:
+            # Proceed with using the contour
+            inst_contour = nucleus_data['contour']
+            logger.info(f"Nucleus ID {nucleus_id} has a contour.")
+        else:
+            logger.warning(f"Nucleus ID {nucleus_id} does not have a contour. Skipping...")
+
     overlaid_predictions = overlay_prediction_contours(
         canvas=tile_img,
         inst_dict={'inst_map': nuclei_predictions},
