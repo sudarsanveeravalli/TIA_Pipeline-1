@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from tiatoolbox.models.engine.nucleus_instance_segmentor import NucleusInstanceSegmentor
 from tiatoolbox.utils.visualization import overlay_prediction_contours
 from tiatoolbox.wsicore.wsireader import WSIReader
+from tiatoolbox.utils import label_utils  # Import label_utils
 import logging
 import torch
 
@@ -28,8 +29,13 @@ logger.info(f"Using GPU for processing: {args.gpu}")
 logger.debug(f"Input arguments: {args}")
 
 # Load metadata
-logger.info(f"Loading metadata from {args.metadata}")
-metadata = joblib.load(args.metadata) if args.metadata else {}
+if args.metadata:
+    logger.info(f"Loading metadata from {args.metadata}")
+    metadata = joblib.load(args.metadata)
+else:
+    metadata = {}
+    logger.warning("No metadata provided, using default MPP.")
+
 mpp = metadata.get('mpp', args.default_mpp)
 
 # Ensure MPP is valid and calculate a single MPP value
@@ -104,42 +110,49 @@ nuclei_predictions = joblib.load(inst_map_path)
 if args.mode == "tile":
     tile_img = plt.imread(args.input)
 
-    # Iterate over nuclei predictions and skip those without a contour
-    valid_nuclei = {
-        nid: nucleus_data for nid, nucleus_data in nuclei_predictions.items() if 'contour' in nucleus_data
-    }
+    # Load the instance map
+    inst_map = nuclei_predictions.get('inst_map', None)
+    if inst_map is None:
+        logger.error("Instance map not found in nuclei predictions.")
+        exit(1)
 
-    if not valid_nuclei:
-        logger.warning("No nuclei with contours found.")
-    else:
-        overlaid_predictions = overlay_prediction_contours(
-            canvas=tile_img,
-            inst_dict={'inst_map': valid_nuclei},
-            draw_dot=False,
-            line_thickness=2
-        )
-        plt.imshow(overlaid_predictions)
-        plt.axis('off')
-        overlay_path = os.path.join(args.output_dir, "nuclei_overlay.png")
-        plt.savefig(overlay_path, bbox_inches='tight', pad_inches=0)
-        logger.info(f"Nuclei overlay image saved at {overlay_path}")
-        plt.show()
+    # Generate instance data including contours
+    inst_data = label_utils.regionprops_dict(inst_map)
 
-logger.info(f"Number of detected nuclei with contours: {len(valid_nuclei)}")
+    inst_dict = {'inst_map': inst_map, 'instances': inst_data}
 
-# Extracting the nucleus IDs and selecting the first one
-nuc_id_list = list(valid_nuclei.keys())
-if nuc_id_list:
-    selected_nuc_id = nuc_id_list[0]
-    logger.info(f"Nucleus prediction structure for nucleus ID: {selected_nuc_id}")
-
-    sample_nuc = valid_nuclei[selected_nuc_id]
-    sample_nuc_keys = list(sample_nuc)
-    logger.info(f"Keys in the output dictionary: {sample_nuc_keys}")
-
-    logger.info(
-        f"Bounding box: ({sample_nuc['box'][0]}, {sample_nuc['box'][1]}, {sample_nuc['box'][2]}, {sample_nuc['box'][3]})"
+    overlaid_predictions = overlay_prediction_contours(
+        canvas=tile_img,
+        inst_dict=inst_dict,
+        draw_dot=False,
+        line_thickness=2
     )
-    logger.info(f"Centroid: ({sample_nuc['centroid'][0]}, {sample_nuc['centroid'][1]})")
-else:
-    logger.warning("No valid nuclei found with contours.")
+
+    plt.imshow(overlaid_predictions)
+    plt.axis('off')
+    overlay_path = os.path.join(args.output_dir, "nuclei_overlay.png")
+    plt.savefig(overlay_path, bbox_inches='tight', pad_inches=0)
+    logger.info(f"Nuclei overlay image saved at {overlay_path}")
+    plt.show()
+
+    logger.info(f"Number of detected nuclei with contours: {len(inst_data)}")
+
+    # Extracting the nucleus IDs and selecting the first one
+    if inst_data:
+        selected_nuc = inst_data[0]  # inst_data is a list of dicts
+        selected_nuc_id = selected_nuc['label']
+        logger.info(f"Nucleus prediction structure for nucleus ID: {selected_nuc_id}")
+
+        sample_nuc_keys = list(selected_nuc.keys())
+        logger.info(f"Keys in the output dictionary: {sample_nuc_keys}")
+
+        bbox = selected_nuc['bbox']  # (min_row, min_col, max_row, max_col)
+        logger.info(
+            f"Bounding box: ({bbox[1]}, {bbox[0]}, {bbox[3]}, {bbox[2]})"
+        )
+        centroid = selected_nuc['centroid']  # (row, col)
+        logger.info(f"Centroid: ({centroid[1]}, {centroid[0]})")
+    else:
+        logger.warning("No valid nuclei found with contours.")
+
+logger.info("Processing complete.")
