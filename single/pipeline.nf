@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 
 // Define parameters
-params.wsi = "/home/ubuntu/bala/bala/ImpartLabs/tmp/DI_dombox2_0006.svs"
-params.outdir = "/home/ubuntu/bala/bala/ImpartLabs/tmp/results"
-params.scripts = "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts"
+params.wsi = "/home/path02/python_envs/ImpartLabs/tmp/input/sample_small.svs"
+params.outdir = "/home/path02/python_envs/ImpartLabs/tmp/results/"
+params.scripts = "/home/path02/python_envs/ImpartLabs/TIA_Pipeline/single/Scripts"
 
 // Create the output directory if it doesn't exist
 new File(params.outdir).mkdirs()
@@ -77,71 +77,6 @@ process nuclei_segmentation {
 }
 
 // Process: feature_extraction
-process feature_extraction {
-    input:
-        path nuclei_result
-
-    output:
-        path "features.csv", emit: extracted_features
-
-    publishDir "${params.outdir}", mode: 'copy'
-    script:
-    """
-    python ${params.scripts}/feature_extract.py --input $nuclei_result --output features.csv
-    """
-    publishDir "${params.outdir}", mode: 'copy'
-}
-
-// Process: model_inference
-process model_inference {
-    input:
-        path extracted_features
-
-    output:
-        path "prediction.txt", emit: prediction
-
-    publishDir "${params.outdir}", mode: 'copy'
-    script:
-    """
-    python ${params.scripts}/model_inference.py --input $extracted_features --output prediction.txt
-    """
-    publishDir "${params.outdir}", mode: 'copy'
-}
-
-// Process: visualize_heatmap
-process visualize_heatmap {
-    input:
-        path normalized_wsi
-        path prediction
-
-    output:
-        path "heatmap.png", emit: heatmap
-
-    publishDir "${params.outdir}", mode: 'copy'
-    script:
-    """
-    python ${params.scripts}/visualize_heatmap.py --input $normalized_wsi --prediction $prediction --output heatmap.png
-    """
-    publishDir "${params.outdir}", mode: 'copy'
-}
-
-// Process: extract_tiles
-process extract_tiles {
-    input:
-        path normalized_wsi
-        path heatmap
-
-    output:
-        path "tiles/", emit: tiles_dir
-
-    publishDir "${params.outdir}", mode: 'copy'
-    script:
-    """
-    mkdir tiles
-    python ${params.scripts}/extract_tiles.py --input $normalized_wsi --heatmap $heatmap --output tiles/
-    """
-    publishDir "${params.outdir}", mode: 'copy'
-}
 
 // Workflow Definition
 workflow {
