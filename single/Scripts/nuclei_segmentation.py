@@ -102,11 +102,7 @@ inst_map_path = os.path.join(output_dir_for_image, '0.dat')
 # Load the segmentation results
 logger.info(f"Loading segmentation results from {inst_map_path}")
 nuclei_predictions = joblib.load(inst_map_path)
-
-
-# Debug: Inspect the nuclei_predictions
-logger.debug(f"nuclei_predictions type: {type(nuclei_predictions)}")
-logger.debug(f"nuclei_predictions content: {nuclei_predictions}")
+print(nuclei_predictions)
 
 # Visualization (for tiles)
 if args.mode == "tile":
