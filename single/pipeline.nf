@@ -98,18 +98,5 @@ workflow {
     // Extract features from nuclei segmentation
     feature_extraction(nuclei_segmentation.out.nuclei_result)
 
-    // Perform model inference
-    model_inference(feature_extraction.out.extracted_features)
 
-    // Visualize heatmap
-    visualize_heatmap(
-        stain_normalization.out.normalized_wsi,
-        model_inference.out.prediction
-    )
-
-    // Extract tiles
-    extract_tiles(
-        stain_normalization.out.normalized_wsi,
-        visualize_heatmap.out.heatmap
-    )
 }
