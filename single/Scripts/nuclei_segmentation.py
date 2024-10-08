@@ -87,53 +87,53 @@ else:
 
 logger.debug(f"Segmentation output: {output}")
 
-# # Get the output directory for the first image
-# output_dir_for_image = output[0][1]
-# logger.info(f"Segmentation results saved in: {output_dir_for_image}")
+# Get the output directory for the first image
+output_dir_for_image = output[0][1]
+logger.info(f"Segmentation results saved in: {output_dir_for_image}")
 
-# # Define the path to the instance map file
-# inst_map_path = os.path.join(output_dir_for_image, 'file_map.dat')
+# Define the path to the instance map file
+inst_map_path = os.path.join(output_dir_for_image, 'file_map.dat')
 
-# # Check if the result file exists
-# if not os.path.exists(inst_map_path):
-#     logger.error(f"Result file not found: {inst_map_path}")
-#     exit(1)
+# Check if the result file exists
+if not os.path.exists(inst_map_path):
+    logger.error(f"Result file not found: {inst_map_path}")
+    exit(1)
 
-# # Load the segmentation results
-# logger.info(f"Loading segmentation results from {inst_map_path}")
-# nuclei_predictions = joblib.load(inst_map_path)
+# Load the segmentation results
+logger.info(f"Loading segmentation results from {inst_map_path}")
+nuclei_predictions = joblib.load(inst_map_path)
 
-# # Visualization (for tiles)
-# if args.mode == "tile":
-#     tile_img = plt.imread(args.input)
-#     overlaid_predictions = overlay_prediction_contours(
-#         canvas=tile_img,
-#         inst_dict={'inst_map': nuclei_predictions},
-#         draw_dot=False,
-#         line_thickness=2
-#     )
-#     plt.imshow(overlaid_predictions)
-#     plt.axis('off')
-#     overlay_path = os.path.join(args.output_dir, "nuclei_overlay.png")
-#     plt.savefig(overlay_path, bbox_inches='tight', pad_inches=0)
-#     logger.info(f"Nuclei overlay image saved at {overlay_path}")
-#     plt.show()
-
-
-# logger.info(f"Number of detected nuclei: {len(nuclei_predictions)}")
-
-# # Extracting the nucleus IDs and selecting the first one
-# nuc_id_list = list(nuclei_predictions.keys())
-# selected_nuc_id = nuc_id_list[0]
-# logger.info(f"Nucleus prediction structure for nucleus ID: {selected_nuc_id}")
+# Visualization (for tiles)
+if args.mode == "tile":
+    tile_img = plt.imread(args.input)
+    overlaid_predictions = overlay_prediction_contours(
+        canvas=tile_img,
+        inst_dict={'inst_map': nuclei_predictions},
+        draw_dot=False,
+        line_thickness=2
+    )
+    plt.imshow(overlaid_predictions)
+    plt.axis('off')
+    overlay_path = os.path.join(args.output_dir, "nuclei_overlay.png")
+    plt.savefig(overlay_path, bbox_inches='tight', pad_inches=0)
+    logger.info(f"Nuclei overlay image saved at {overlay_path}")
+    plt.show()
 
 
-# sample_nuc = nuclei_predictions[selected_nuc_id]
-# sample_nuc_keys = list(sample_nuc)
-# logger.info(f"Keys in the output dictionary: {sample_nuc_keys}")
+logger.info(f"Number of detected nuclei: {len(nuclei_predictions)}")
+
+# Extracting the nucleus IDs and selecting the first one
+nuc_id_list = list(nuclei_predictions.keys())
+selected_nuc_id = nuc_id_list[0]
+logger.info(f"Nucleus prediction structure for nucleus ID: {selected_nuc_id}")
 
 
-# logger.info(
-#     f"Bounding box: ({sample_nuc['box'][0]}, {sample_nuc['box'][1]}, {sample_nuc['box'][2]}, {sample_nuc['box'][3]})"
-# )
-# logger.info(f"Centroid: ({sample_nuc['centroid'][0]}, {sample_nuc['centroid'][1]})")
+sample_nuc = nuclei_predictions[selected_nuc_id]
+sample_nuc_keys = list(sample_nuc)
+logger.info(f"Keys in the output dictionary: {sample_nuc_keys}")
+
+
+logger.info(
+    f"Bounding box: ({sample_nuc['box'][0]}, {sample_nuc['box'][1]}, {sample_nuc['box'][2]}, {sample_nuc['box'][3]})"
+)
+logger.info(f"Centroid: ({sample_nuc['centroid'][0]}, {sample_nuc['centroid'][1]})")
