@@ -95,8 +95,5 @@ workflow {
         tissue_mask.out.tissue_mask
     )
 
-    // Extract features from nuclei segmentation
-    feature_extraction(nuclei_segmentation.out.nuclei_result)
-
 
 }
