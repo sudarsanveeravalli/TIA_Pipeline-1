@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from tiatoolbox.models.engine.nucleus_instance_segmentor import NucleusInstanceSegmentor
 from tiatoolbox.utils.visualization import overlay_prediction_contours
 from tiatoolbox.wsicore.wsireader import WSIReader
-from tiatoolbox.utils import label_utils  # Import label_utils
+from tiatoolbox.tools.patchextraction import label_utils # Import label_utils
 import logging
 import torch
 
