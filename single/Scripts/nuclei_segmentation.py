@@ -8,7 +8,6 @@ from tiatoolbox.wsicore.wsireader import WSIReader
 import logging
 import torch
 
-
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -29,13 +28,9 @@ logger.info(f"Using GPU for processing: {args.gpu}")
 logger.debug(f"Input arguments: {args}")
 
 # Load metadata
-if args.metadata:
-    logger.info(f"Loading metadata from {args.metadata}")
-    metadata = joblib.load(args.metadata)
-    mpp = metadata.get('mpp', args.default_mpp)
-else:
-    logger.warning(f"No metadata provided. Using default MPP: {args.default_mpp}")
-    mpp = args.default_mpp
+logger.info(f"Loading metadata from {args.metadata}")
+metadata = joblib.load(args.metadata)
+mpp = metadata.get('mpp', args.default_mpp)
 
 # Ensure MPP is valid and calculate a single MPP value
 if isinstance(mpp, tuple) and len(mpp) == 2:
@@ -59,9 +54,9 @@ segmentor = NucleusInstanceSegmentor(
 )
 
 # Process depending on the mode (wsi or tile)
-try:
-    if args.mode == "wsi":
-        logger.info(f"Running segmentation on WSI: {args.input}")
+if args.mode == "wsi":
+    logger.info(f"Running segmentation on WSI: {args.input}")
+    try:
         wsi = WSIReader.open(args.input)
         output = segmentor.predict(
             imgs=[wsi],
@@ -70,8 +65,12 @@ try:
             on_gpu=args.gpu,
             crash_on_exception=False
         )
-    else:
-        logger.info(f"Running segmentation on Tile: {args.input}")
+    except Exception as e:
+        logger.error(f"Segmentation failed for WSI: {e}")
+        exit(1)
+else:
+    logger.info(f"Running segmentation on Tile: {args.input}")
+    try:
         output = segmentor.predict(
             imgs=[args.input],
             save_dir=args.output_dir,
@@ -79,27 +78,27 @@ try:
             on_gpu=args.gpu,
             crash_on_exception=False
         )
-except Exception as e:
-    logger.error(f"Segmentation failed: {e}")
-    exit(1)
+    except Exception as e:
+        logger.error(f"Segmentation failed for Tile: {e}")
+        exit(1)
 
 logger.debug(f"Segmentation output: {output}")
 
-# Assuming 'output' contains a directory structure for results, retrieve the 0.dat file
-result_dir = output[0][1]
-logger.info(f"Segmentation results saved in: {result_dir}")
+# Get the output path directly without looking for nested folders
+output_dir_for_image = args.output_dir
+logger.info(f"Segmentation results saved in: {output_dir_for_image}")
 
-# Path to the 0.dat file (instance map)
-dat_file_path = os.path.join(result_dir, '0.dat')
+# Define the path to the instance map file
+inst_map_path = os.path.join(output_dir_for_image, '0.dat')
 
 # Check if the result file exists
-if not os.path.exists(dat_file_path):
-    logger.error(f"Result file not found: {dat_file_path}")
+if not os.path.exists(inst_map_path):
+    logger.error(f"Result file not found: {inst_map_path}")
     exit(1)
 
 # Load the segmentation results
-logger.info(f"Loading segmentation results from {dat_file_path}")
-nuclei_predictions = joblib.load(dat_file_path)
+logger.info(f"Loading segmentation results from {inst_map_path}")
+nuclei_predictions = joblib.load(inst_map_path)
 
 # Visualization (for tiles)
 if args.mode == "tile":
