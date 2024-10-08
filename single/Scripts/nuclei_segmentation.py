@@ -106,24 +106,32 @@ if args.mode == "tile":
 
     for nucleus_id, nucleus_data in nuclei_predictions.items():
         if 'contour' in nucleus_data:
-            # Proceed with using the contour
             inst_contour = nucleus_data['contour']
             logger.info(f"Nucleus ID {nucleus_id} has a contour.")
+        elif 'box' in nucleus_data:
+            logger.info(f"Nucleus ID {nucleus_id} missing contour, using bounding box instead.")
+            # Use the bounding box for visualization in case contour is missing
+            inst_contour = [
+                [nucleus_data['box'][0], nucleus_data['box'][1]],
+                [nucleus_data['box'][2], nucleus_data['box'][3]]
+            ]
         else:
-            logger.warning(f"Nucleus ID {nucleus_id} does not have a contour. Skipping...")
+            logger.warning(f"Nucleus ID {nucleus_id} does not have a contour or bounding box. Skipping...")
+            continue
 
-    overlaid_predictions = overlay_prediction_contours(
-        canvas=tile_img,
-        inst_dict={'inst_map': nuclei_predictions},
-        draw_dot=False,
-        line_thickness=2
-    )
-    plt.imshow(overlaid_predictions)
-    plt.axis('off')
-    overlay_path = os.path.join(args.output_dir, "nuclei_overlay.png")
-    plt.savefig(overlay_path, bbox_inches='tight', pad_inches=0)
-    logger.info(f"Nuclei overlay image saved at {overlay_path}")
-    plt.show()
+        # Visualize contours or bounding boxes
+        overlaid_predictions = overlay_prediction_contours(
+            canvas=tile_img,
+            inst_dict={'inst_map': nuclei_predictions},
+            draw_dot=False,
+            line_thickness=2
+        )
+        plt.imshow(overlaid_predictions)
+        plt.axis('off')
+        overlay_path = os.path.join(args.output_dir, "nuclei_overlay.png")
+        plt.savefig(overlay_path, bbox_inches='tight', pad_inches=0)
+        logger.info(f"Nuclei overlay image saved at {overlay_path}")
+        plt.show()
 
 logger.info(f"Number of detected nuclei: {len(nuclei_predictions)}")
 
