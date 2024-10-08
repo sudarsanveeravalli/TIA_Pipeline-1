@@ -58,7 +58,7 @@ process tissue_mask {
 
     script:
     """
-    python ${params.scripts}/tissue_mask.py --input $normalized_wsi --output tissue_mask.png --resolution 1.25 --units power
+    python ${params.scripts}/tissue_mask.py --input $normalized_wsi --output tissue_mask.png --resolution 1.25
     """
 }
 
@@ -80,22 +80,7 @@ process nuclei_segmentation {
     """
 }
 
-// Process: feature_extraction (Optional, if needed)
-process feature_extraction {
-    conda '/path/to/conda/envs/image-processing'
-    input:
-        path nuclei_result
 
-    output:
-        path "features.csv"
-
-    publishDir "${params.outdir}", mode: 'copy'
-
-    script:
-    """
-    python ${params.scripts}/feature_extract.py --input $nuclei_result --output features.csv
-    """
-}
 
 // Workflow Definition
 workflow {
@@ -114,6 +99,5 @@ workflow {
         tissue_mask_im
     )
 
-    // (Optional) Perform feature extraction
-    feature_extraction(nuclei_res)
+
 }
