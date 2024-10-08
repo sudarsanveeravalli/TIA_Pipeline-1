@@ -76,7 +76,7 @@ process nuclei_segmentation {
 
     script:
     """
-    python ${params.scripts}/hovernet.py --input $normalized_wsi --mask $tissue_mask --output nuclei_result.pkl
+    python ${params.scripts}/nuclei_segmentation.py --input $normalized_wsi --mask $tissue_mask --output nuclei_result.pkl
     """
 }
 
