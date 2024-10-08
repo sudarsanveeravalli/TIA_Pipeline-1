@@ -97,14 +97,12 @@ logger.info(f"Segmentation results saved in: {output_dir_for_image}")
 # Define the path to the instance map file
 inst_map_path = os.path.join(output_dir_for_image, '0.dat')
 
-# Check if the result file exists
-if not os.path.exists(inst_map_path):
-    logger.error(f"Result file not found: {inst_map_path}")
-    exit(1)
+
 
 # Load the segmentation results
 logger.info(f"Loading segmentation results from {inst_map_path}")
 nuclei_predictions = joblib.load(inst_map_path)
+
 
 # Debug: Inspect the nuclei_predictions
 logger.debug(f"nuclei_predictions type: {type(nuclei_predictions)}")
