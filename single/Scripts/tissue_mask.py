@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 
 import os
 import argparse
@@ -12,12 +12,13 @@ import matplotlib.pyplot as plt
 parser = argparse.ArgumentParser(description="Tissue Masking for WSIs or Regular Images")
 parser.add_argument('--input', type=str, help='Path to WSI or regular image file', required=True)
 parser.add_argument('--output', type=str, help='Directory to save tissue mask', required=True)
-parser.add_argument('--resolution', type=float, default=1.25, help='Resolution for tissue mask generation (only used for WSIs)')
+parser.add_argument('--resolution', type=float, default=1.25, help='Resolution for tissue mask generation')
+parser.add_argument('--units', type=str, choices=['mpp', 'power', 'level', 'baseline'], default='mpp', help='Units for resolution')
 parser.add_argument('--mpp', type=float, help="Manually provide Microns Per Pixel (MPP) if missing in metadata", default=0.5)
 
 args = parser.parse_args()
 
-# Extract input filename (without extension) to create output folder, if needed
+# Extract input filename (without extension)
 input_filename = os.path.basename(args.input).split('.')[0]
 output_dir = args.output
 
@@ -28,7 +29,7 @@ os.makedirs(output_dir, exist_ok=True)
 if not os.path.exists(args.input):
     raise FileNotFoundError(f"Input file {args.input} not found.")
 
-# Try to handle both WSI files and regular images
+# Handle both WSI files and regular images
 if args.input.lower().endswith(('.svs', '.tiff', '.ndpi', '.vms')):
     # Handle WSIs
     wsi = WSIReader.open(args.input)
@@ -41,9 +42,9 @@ if args.input.lower().endswith(('.svs', '.tiff', '.ndpi', '.vms')):
         print(f"Warning: MPP not found in metadata, using default MPP of {args.mpp}")
         mpp = (args.mpp, args.mpp)
     
-    # Generate tissue mask at the specified resolution
-    mask = wsi.tissue_mask(resolution=args.resolution, units="mpp")  # Use MPP units explicitly
-    mask_thumb = mask.slide_thumbnail(resolution=args.resolution, units="mpp")
+    # Generate tissue mask at the specified resolution and units
+    mask = wsi.tissue_mask(resolution=args.resolution, units=args.units)
+    mask_thumb = mask  # Use the mask directly
 
 elif args.input.lower().endswith(('.png', '.jpg', '.jpeg')):
     # Handle regular images using OpenCV
@@ -67,7 +68,7 @@ if not mask_thumb.flags.writeable:
     mask_thumb.flags.writeable = True
 
 # Convert the mask to a PIL Image and save as PNG
-mask_image_pil = Image.fromarray(mask_thumb)
+mask_image_pil = Image.fromarray(mask_thumb.astype(np.uint8))
 mask_filename = f"{input_filename}_tissue_mask.png"
 mask_path = os.path.join(output_dir, mask_filename)
 
@@ -83,7 +84,7 @@ plt.axis("off")
 # Save the visualization
 visualization_path = os.path.join(output_dir, f"{input_filename}_mask_visualization.png")
 plt.savefig(visualization_path)
-plt.show()
+# plt.show()  # Comment out if running in non-interactive environments
 
 print(f"Tissue mask saved to: {mask_path}")
 print(f"Mask visualization saved to: {visualization_path}")
