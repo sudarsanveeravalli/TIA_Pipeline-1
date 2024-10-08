@@ -99,7 +99,7 @@ if not os.path.exists(inst_map_path):
 # Load the segmentation results
 logger.info(f"Loading segmentation results from {inst_map_path}")
 nuclei_predictions = joblib.load(inst_map_path)
-
+print (nuclei_predictions)
 # Visualization (for tiles)
 if args.mode == "tile":
     tile_img = plt.imread(args.input)
