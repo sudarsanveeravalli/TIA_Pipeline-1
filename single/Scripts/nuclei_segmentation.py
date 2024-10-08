@@ -106,6 +106,10 @@ if not os.path.exists(inst_map_path):
 logger.info(f"Loading segmentation results from {inst_map_path}")
 nuclei_predictions = joblib.load(inst_map_path)
 
+# Debug: Inspect the nuclei_predictions
+logger.debug(f"nuclei_predictions type: {type(nuclei_predictions)}")
+logger.debug(f"nuclei_predictions content: {nuclei_predictions}")
+
 # Visualization (for tiles)
 if args.mode == "tile":
     tile_img = plt.imread(args.input)
