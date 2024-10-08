@@ -1,10 +1,6 @@
 #!/usr/bin/env nextflow
 
-// Define parameters (OG)
-//params.input = "/home/path02/python_envs/ImpartLabs/tmp/input/sample_small.svs"
-//params.outdir = "/home/path02/python_envs/ImpartLabs/tmp/results/"
-//params.scripts = "/home/path02/python_envs/ImpartLabs/TIA_Pipeline/single/Scripts"
-
+// Define parameters
 params.input = "/home/ubuntu/bala/bala/ImpartLabs/tmp/input/sample_small.svs"
 params.outdir = "/home/ubuntu/bala/bala/ImpartLabs/tmp/results/"
 params.scripts = "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts"
@@ -99,17 +95,17 @@ process feature_extraction {
 // Workflow Definition
 workflow {
     // Start with the WSI file
-    read_wsi(wsi_file)
+    def wsi_thumbnail = read_wsi(wsi_file)
 
     // Perform stain normalization
-    def norm_wsi = stain_normalization(read_wsi.out.wsi_thumbnail)
+    def norm_wsi = stain_normalization(wsi_thumbnail)
 
     // Create tissue mask using normalized WSI
-    def tissue_mask_im = tissue_mask(norm_wsi.out.normalized_wsi)
+    def tissue_mask_im = tissue_mask(norm_wsi)
 
     // Perform nuclei segmentation
     nuclei_segmentation(
-        norm_wsi.out.normalized_wsi,
-        tissue_mask_im.out.tissue_mask
+        norm_wsi,
+        tissue_mask_im
     )
 }
