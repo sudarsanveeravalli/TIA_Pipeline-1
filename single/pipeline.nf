@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 // Define parameters
-params.wsi = "/home/path02/python_envs/ImpartLabs/tmp/input/sample_small.svs"
+params.input = "/home/path02/python_envs/ImpartLabs/tmp/input/sample_small.svs"
 params.outdir = "/home/path02/python_envs/ImpartLabs/tmp/results/"
 params.scripts = "/home/path02/python_envs/ImpartLabs/TIA_Pipeline/single/Scripts"
 
@@ -9,10 +9,11 @@ params.scripts = "/home/path02/python_envs/ImpartLabs/TIA_Pipeline/single/Script
 new File(params.outdir).mkdirs()
 
 // Define the input channel for the WSI file
-Channel.fromPath(params.wsi).set { wsi_file }
+Channel.fromPath(params.input).set { wsi_file }
 
 // Process: read_wsi
 process read_wsi {
+    conda '/path/to/conda/envs/image-processing'
     input:
         path wsi_file
 
@@ -24,11 +25,11 @@ process read_wsi {
     """
     python ${params.scripts}/read_wsi.py --input $wsi_file --output thumbnail.png
     """
-    
 }
 
 // Process: stain_normalization
 process stain_normalization {
+    conda '/path/to/conda/envs/image-processing'
     input:
         path wsi_file
 
@@ -40,11 +41,11 @@ process stain_normalization {
     """
     python ${params.scripts}/stain_normalization.py --input $wsi_file --output normalized_wsi.png
     """
-    
 }
 
 // Process: tissue_mask
 process tissue_mask {
+    conda '/path/to/conda/envs/image-processing'
     input:
         path normalized_wsi
 
@@ -56,11 +57,11 @@ process tissue_mask {
     """
     python ${params.scripts}/tissue_mask.py --input $normalized_wsi --output tissue_mask.png
     """
-    
 }
 
 // Process: nuclei_segmentation
 process nuclei_segmentation {
+    conda '/path/to/conda/envs/image-processing'
     input:
         path normalized_wsi
         path tissue_mask
@@ -73,10 +74,23 @@ process nuclei_segmentation {
     """
     python ${params.scripts}/hovernet.py --input $normalized_wsi --mask $tissue_mask --output nuclei_result.pkl
     """
-    
 }
 
-// Process: feature_extraction
+// Process: feature_extraction (Optional, if needed)
+process feature_extraction {
+    conda '/path/to/conda/envs/image-processing'
+    input:
+        path nuclei_result
+
+    output:
+        path "features.csv", emit: extracted_features
+
+    publishDir "${params.outdir}", mode: 'copy'
+    script:
+    """
+    python ${params.scripts}/feature_extract.py --input $nuclei_result --output features.csv
+    """
+}
 
 // Workflow Definition
 workflow {
@@ -84,16 +98,14 @@ workflow {
     read_wsi(wsi_file)
 
     // Perform stain normalization
-    stain_normalization(wsi_file)
+    def norm_wsi = stain_normalization(read_wsi.out.wsi_thumbnail)
 
     // Create tissue mask using normalized WSI
-    tissue_mask(stain_normalization.out.normalized_wsi)
+    def tissue_mask_im = tissue_mask(norm_wsi.out.normalized_wsi)
 
     // Perform nuclei segmentation
     nuclei_segmentation(
-        stain_normalization.out.normalized_wsi,
-        tissue_mask.out.tissue_mask
+        norm_wsi.out.normalized_wsi,
+        tissue_mask_im.out.tissue_mask
     )
-
-
 }
