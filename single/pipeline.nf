@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 
 // Define parameters (OG)
-#params.input = "/home/path02/python_envs/ImpartLabs/tmp/input/sample_small.svs"
-#params.outdir = "/home/path02/python_envs/ImpartLabs/tmp/results/"
-#params.scripts = "/home/path02/python_envs/ImpartLabs/TIA_Pipeline/single/Scripts"
+//params.input = "/home/path02/python_envs/ImpartLabs/tmp/input/sample_small.svs"
+//params.outdir = "/home/path02/python_envs/ImpartLabs/tmp/results/"
+//params.scripts = "/home/path02/python_envs/ImpartLabs/TIA_Pipeline/single/Scripts"
 
 params.input = "/home/ubuntu/bala/bala/ImpartLabs/tmp/input/sample_small.svs"
 params.outdir = "/home/ubuntu/bala/bala/ImpartLabs/tmp/results/"
