@@ -24,7 +24,7 @@ process read_wsi {
     """
     python ${params.scripts}/read_wsi.py --input $wsi_file --output thumbnail.png
     """
-    publishDir "${params.outdir}", mode: 'copy'
+    
 }
 
 // Process: stain_normalization
@@ -40,7 +40,7 @@ process stain_normalization {
     """
     python ${params.scripts}/stain_normalization.py --input $wsi_file --output normalized_wsi.png
     """
-    publishDir "${params.outdir}", mode: 'copy'
+    
 }
 
 // Process: tissue_mask
@@ -56,7 +56,7 @@ process tissue_mask {
     """
     python ${params.scripts}/tissue_mask.py --input $normalized_wsi --output tissue_mask.png
     """
-    publishDir "${params.outdir}", mode: 'copy'
+    
 }
 
 // Process: nuclei_segmentation
@@ -73,7 +73,7 @@ process nuclei_segmentation {
     """
     python ${params.scripts}/hovernet.py --input $normalized_wsi --mask $tissue_mask --output nuclei_result.pkl
     """
-    publishDir "${params.outdir}", mode: 'copy'
+    
 }
 
 // Process: feature_extraction
