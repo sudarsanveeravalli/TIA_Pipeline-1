@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 from tiatoolbox.models.engine.nucleus_instance_segmentor import NucleusInstanceSegmentor
 from tiatoolbox.utils.visualization import overlay_prediction_contours
 from tiatoolbox.wsicore.wsireader import WSIReader
-from tiatoolbox.utils.misc import label_utils
- # Import label_utils
+from skimage import measure  # Use skimage to compute region properties
 import logging
 import torch
 
@@ -117,8 +116,20 @@ if args.mode == "tile":
         logger.error("Instance map not found in nuclei predictions.")
         exit(1)
 
-    # Generate instance data including contours
-    inst_data = label_utils.regionprops_dict(inst_map)
+    # Generate instance data including contours using skimage
+    regions = measure.regionprops(inst_map)
+    inst_data = []
+
+    for region in regions:
+        # Get the contour coordinates
+        contours = measure.find_contours(inst_map == region.label, 0.5)
+        contour = contours[0] if contours else None
+        inst_data.append({
+            'label': region.label,
+            'bbox': region.bbox,
+            'centroid': region.centroid,
+            'contour': contour,
+        })
 
     inst_dict = {'inst_map': inst_map, 'instances': inst_data}
 
