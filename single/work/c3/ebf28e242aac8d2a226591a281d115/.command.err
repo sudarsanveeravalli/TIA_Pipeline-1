@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts/tissue_mask.py", line 37, in <module>
+    raise ValueError(f"Failed to load image: {args.input}")
+ValueError: Failed to load image: normalized_wsi.png

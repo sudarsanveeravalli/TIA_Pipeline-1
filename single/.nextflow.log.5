@@ -1,0 +1,113 @@
+Oct-08 18:40:30.151 [main] DEBUG nextflow.cli.Launcher - $> nextflow run pipeline.nf
+Oct-08 18:40:30.344 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.04.4
+Oct-08 18:40:30.371 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/ubuntu/.nextflow/plugins; core-plugins: nf-amazon@2.5.3,nf-azure@1.6.1,nf-cloudcache@0.4.1,nf-codecommit@0.2.1,nf-console@1.1.3,nf-ga4gh@1.3.0,nf-google@1.13.2-patch1,nf-tower@1.9.1,nf-wave@1.4.2-patch1
+Oct-08 18:40:30.385 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Oct-08 18:40:30.388 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Oct-08 18:40:30.393 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Oct-08 18:40:30.419 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Oct-08 18:40:30.524 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 by global default
+Oct-08 18:40:30.550 [main] DEBUG nextflow.cli.CmdRun - Launching `pipeline.nf` [clever_kare] DSL2 - revision: 6da7143160
+Oct-08 18:40:30.554 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Oct-08 18:40:30.554 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+Oct-08 18:40:30.653 [main] DEBUG nextflow.Session - Session UUID: c8535aad-5d60-4246-8d5a-20769a3b2d8a
+Oct-08 18:40:30.654 [main] DEBUG nextflow.Session - Run name: clever_kare
+Oct-08 18:40:30.655 [main] DEBUG nextflow.Session - Executor pool size: 2
+Oct-08 18:40:30.664 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Oct-08 18:40:30.675 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=10; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Oct-08 18:40:30.712 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 24.04.4 build 5917
+  Created: 01-08-2024 07:05 UTC 
+  System: Linux 6.8.0-1016-aws
+  Runtime: Groovy 4.0.21 on OpenJDK 64-Bit Server VM 11.0.24+8-post-Ubuntu-1ubuntu324.04.1
+  Encoding: UTF-8 (UTF-8)
+  Process: 83901@ip-172-31-85-210 [172.31.85.210]
+  CPUs: 2 - Mem: 3.8 GB (1.2 GB) - Swap: 0 (0)
+Oct-08 18:40:30.743 [main] DEBUG nextflow.Session - Work-dir: /home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/work [ext2/ext3]
+Oct-08 18:40:30.743 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/bin
+Oct-08 18:40:30.762 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Oct-08 18:40:30.805 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Oct-08 18:40:30.891 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Oct-08 18:40:30.913 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 3; maxThreads: 1000
+Oct-08 18:40:30.999 [main] DEBUG nextflow.Session - Session start
+Oct-08 18:40:32.204 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Oct-08 18:40:32.224 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/ubuntu/.nextflow/secrets/store.json
+Oct-08 18:40:32.242 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@499ee966] - activable => nextflow.secret.LocalSecretsProvider@499ee966
+Oct-08 18:40:32.436 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-08 18:40:32.436 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-08 18:40:32.445 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Oct-08 18:40:32.453 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=2; memory=3.8 GB; capacity=2; pollInterval=100ms; dumpInterval=5m
+Oct-08 18:40:32.456 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+Oct-08 18:40:32.590 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-08 18:40:32.591 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-08 18:40:32.596 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-08 18:40:32.596 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-08 18:40:32.601 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-08 18:40:32.601 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-08 18:40:32.605 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: stain_normalization, nuclei_segmentation, tissue_mask, read_wsi, feature_extraction
+Oct-08 18:40:32.607 [main] DEBUG nextflow.Session - Igniting dataflow network (5)
+Oct-08 18:40:32.613 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > read_wsi
+Oct-08 18:40:32.617 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > stain_normalization
+Oct-08 18:40:32.617 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > tissue_mask
+Oct-08 18:40:32.619 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > nuclei_segmentation
+Oct-08 18:40:32.620 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_e0d8d4eced3ca7e2: /home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/pipeline.nf
+Oct-08 18:40:32.620 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Oct-08 18:40:32.620 [main] DEBUG nextflow.Session - Session await
+Oct-08 18:40:32.954 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Oct-08 18:40:32.961 [Task submitter] INFO  nextflow.Session - [90/896d61] Submitted process > read_wsi (1)
+Oct-08 18:40:36.760 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: read_wsi (1); status: COMPLETED; exit: 0; error: -; workDir: /home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/work/90/896d61c3ead0103f14f4c37d4432ee]
+Oct-08 18:40:36.761 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=10; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Oct-08 18:40:36.815 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Oct-08 18:40:36.816 [TaskFinalizer-1] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=10; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Oct-08 18:40:36.817 [Task submitter] INFO  nextflow.Session - [f9/785830] Submitted process > stain_normalization (1)
+Oct-08 18:40:47.852 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: stain_normalization (1); status: COMPLETED; exit: 1; error: -; workDir: /home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/work/f9/785830931afb2584b3b392d24e1a07]
+Oct-08 18:40:47.857 [TaskFinalizer-2] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
+  task: name=stain_normalization (1); work-dir=/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/work/f9/785830931afb2584b3b392d24e1a07
+  error [nextflow.exception.ProcessFailedException]: Process `stain_normalization (1)` terminated with an error exit status (1)
+Oct-08 18:40:47.879 [TaskFinalizer-2] ERROR nextflow.processor.TaskProcessor - Error executing process > 'stain_normalization (1)'
+
+Caused by:
+  Process `stain_normalization (1)` terminated with an error exit status (1)
+
+
+Command executed:
+
+  python /home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts/stain_normalization.py --input thumbnail.png --output normalized_wsi.png
+
+Command exit status:
+  1
+
+Command output:
+  (empty)
+
+Command error:
+  |2024-10-08|18:40:46.889| [WARNING] Raw data is None.
+  |2024-10-08|18:40:46.889| [WARNING] Unknown scale (no objective_power or mpp)
+  Traceback (most recent call last):
+    File "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts/stain_normalization.py", line 30, in <module>
+      slide_image = wsi_reader.read_region(location=(0, 0), level=0, size=wsi_reader.slide_dimensions(resolution= 1.0, units="mpp")[0]) # Changed from .5 to 2.0
+                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsireader.py", line 745, in slide_dimensions
+      ) = self._find_read_bounds_params(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsireader.py", line 794, in _find_read_bounds_params
+      read_level, post_read_scale_factor = self._find_optimal_level_and_downsample(
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsireader.py", line 477, in _find_optimal_level_and_downsample
+      level_scales = self.info.relative_level_scales(resolution, units)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsimeta.py", line 289, in relative_level_scales
+      raise ValueError(msg)
+  ValueError: MPP is None. Cannot determine scale in terms of MPP.
+
+Work dir:
+  /home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/work/f9/785830931afb2584b3b392d24e1a07
+
+Tip: when you have fixed the problem you can continue the execution adding the option `-resume` to the run command line
+Oct-08 18:40:47.888 [TaskFinalizer-2] DEBUG nextflow.Session - Session aborted -- Cause: Process `stain_normalization (1)` terminated with an error exit status (1)
+Oct-08 18:40:47.903 [main] DEBUG nextflow.Session - Session await > all processes finished
+Oct-08 18:40:47.928 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+Oct-08 18:40:47.928 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Oct-08 18:40:47.945 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=1; failedCount=1; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=3.8s; failedDuration=11s; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=1; peakCpus=1; peakMemory=0; ]
+Oct-08 18:40:48.107 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Oct-08 18:40:48.126 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

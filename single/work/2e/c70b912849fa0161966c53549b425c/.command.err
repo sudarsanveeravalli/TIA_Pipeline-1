@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts/stain_normalization.py", line 24, in <module>
+    normalizer = get_normalizer(method="vahadane")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: get_normalizer() got an unexpected keyword argument 'method'

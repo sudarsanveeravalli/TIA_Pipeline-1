@@ -1,0 +1,3 @@
+usage: nuclei_segmentation.py [-h] --input INPUT --output_dir OUTPUT_DIR [--metadata METADATA] [--mode {wsi,tile}] [--gpu]
+                              [--default_mpp DEFAULT_MPP]
+nuclei_segmentation.py: error: unrecognized arguments: --mask tissue_mask.png

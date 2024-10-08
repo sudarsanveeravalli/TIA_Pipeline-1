@@ -1,0 +1,26 @@
+2024-09-30 20:35:18	-	loving_blackwell	-	7dd0320974d7aec7cae2d1860d9b1613	a76829e1-2a29-4a3b-94de-8067ce97ecf2	nextflow run pipeline.nf
+2024-09-30 20:40:31	2.9s	zen_bose	ERR	41575086973cb04608ae4f2d37c4e0fd	b54e5e2b-1804-4bb2-9421-edab7bbf1f9e	nextflow run pipeline.nf
+2024-09-30 20:45:28	2.8s	friendly_payne	ERR	4373d4c274cb281d479b098b5b6ecd6b	394df8ac-067f-49e1-8b17-9a884fbe79c8	nextflow run pipeline.nf
+2024-09-30 21:06:53	3s	insane_venter	ERR	42057b133cff5024fc50200a0e2430ea	1bd70aba-bc25-425e-a4c0-2b0ddf154216	nextflow run pipeline.nf
+2024-09-30 21:16:40	2.9s	reverent_stallman	ERR	ef5bff32b91ceb6ac82d6057e5f958f1	6c14f21e-4c8f-45d1-ab33-56a8e46f3981	nextflow run pipeline.nf
+2024-09-30 21:43:30	3s	extravagant_volhard	ERR	1e0fa2a360b6b5d692fc282d73dd2948	76726fd7-ae88-49e5-99b2-effbd8fcb45b	nextflow run pipeline.nf
+2024-09-30 21:45:17	3.1s	sad_koch	ERR	d8cd130273fe459187d512c984e26c78	27dea4de-4962-43c1-8795-492b13e9bf2f	nextflow run pipeline.nf
+2024-09-30 21:48:23	2.5s	big_ride	ERR	d8cd130273fe459187d512c984e26c78	93ce821b-8a3d-40cb-8c7b-c768d6b72dac	nextflow run pipeline.nf
+2024-10-01 06:15:21	24.1s	ecstatic_marconi	ERR	d8cd130273fe459187d512c984e26c78	5f050733-23d3-4917-9568-d84ecd042099	nextflow run pipeline.nf
+2024-10-01 06:23:03	15.1s	drunk_lalande	ERR	d8cd130273fe459187d512c984e26c78	64001dc7-c48f-49f4-8985-3a52774c7462	nextflow run pipeline.nf
+2024-10-01 14:05:31	17.1s	crazy_joliot	ERR	d8cd130273fe459187d512c984e26c78	28d0796d-2a75-435d-beec-101755be1df9	nextflow run pipeline.nf
+2024-10-01 14:12:15	22.9s	stupefied_kimura	ERR	d8cd130273fe459187d512c984e26c78	ec5fc1f6-abad-4313-afaf-42d2232d9812	nextflow run pipeline.nf
+2024-10-01 14:17:19	22.9s	modest_lorenz	ERR	d8cd130273fe459187d512c984e26c78	2bc591dd-0768-477f-9e97-c0c6316738fb	nextflow run pipeline.nf
+2024-10-01 14:35:33	23.4s	modest_leavitt	ERR	eff64c3e14b65d42349e97ddcc0dc37a	3d40711e-9a34-4169-8688-bb8ae3486808	nextflow run pipeline.nf
+2024-10-02 17:49:33	3.2s	lethal_lavoisier	ERR	eff64c3e14b65d42349e97ddcc0dc37a	beca0956-b3cc-4a8c-8a0a-3bfc7ba1855f	nextflow run pipeline.nf
+2024-10-02 17:52:03	6h 29m 29s	suspicious_feynman	ERR	eff64c3e14b65d42349e97ddcc0dc37a	d782cd8e-1357-408d-a0b5-b3873ccf94d3	nextflow run pipeline.nf
+2024-10-04 00:43:29	3.5s	agitated_cori	ERR	eff64c3e14b65d42349e97ddcc0dc37a	daf85f61-0800-45e0-a7c0-58fedcb275d4	nextflow run pipeline.nf
+2024-10-08 18:25:48	12.5s	infallible_boyd	ERR	eff64c3e14b65d42349e97ddcc0dc37a	0f02c4ae-b3f5-442b-9bf0-02a947ed935a	nextflow run pipeline.nf
+2024-10-08 18:36:45	-	determined_murdock	-	552d1ca1f980234434464f2f0176244c	ad4d0be0-056c-4d24-af02-bcc9ccf271c7	nextflow run pipeline.nf
+2024-10-08 18:37:36	-	mad_volhard	-	ed004b667950295026608635ebc01fef	2671d6bc-101d-49e1-a4e5-b6cab191a2d6	nextflow run pipeline.nf
+2024-10-08 18:40:30	18.1s	clever_kare	ERR	6da7143160595c33f3bfe91ebd0fa65a	c8535aad-5d60-4246-8d5a-20769a3b2d8a	nextflow run pipeline.nf
+2024-10-08 18:45:35	28.3s	dreamy_picasso	ERR	f6d72083c0b33e6e5736ad963bf6b132	2c84f316-d5e1-45f1-9f0d-6ef17456ff44	nextflow run pipeline.nf
+2024-10-08 18:47:31	29s	goofy_austin	ERR	f8386e7b0653164bd0d7b29049049eed	bcb8b50b-788b-414c-b514-5b53ee482a61	nextflow run pipeline.nf
+2024-10-08 18:49:57	38.5s	ecstatic_goldwasser	ERR	8297a3e356ea40f6394cf2a8b358ce77	2d5e3550-9989-4317-bc29-133737e0db3d	nextflow run pipeline.nf
+2024-10-08 19:17:18	38s	evil_lorenz	ERR	8297a3e356ea40f6394cf2a8b358ce77	645dab50-1cd6-4de6-8d06-1aad17d9005d	nextflow run pipeline.nf
+2024-10-08 19:22:25	38.1s	clever_faggin	ERR	8297a3e356ea40f6394cf2a8b358ce77	2a0c5462-abbb-477b-bdaf-d156a677b74f	nextflow run pipeline.nf

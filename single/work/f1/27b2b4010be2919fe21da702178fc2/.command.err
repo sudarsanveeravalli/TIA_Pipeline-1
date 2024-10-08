@@ -1,0 +1,2 @@
+usage: tissue_mask.py [-h] --input INPUT --output OUTPUT [--resolution RESOLUTION] [--mpp MPP]
+tissue_mask.py: error: unrecognized arguments: --units power

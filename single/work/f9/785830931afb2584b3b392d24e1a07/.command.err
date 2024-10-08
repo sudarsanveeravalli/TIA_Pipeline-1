@@ -1,0 +1,18 @@
+|2024-10-08|18:40:46.889| [WARNING] Raw data is None.
+|2024-10-08|18:40:46.889| [WARNING] Unknown scale (no objective_power or mpp)
+Traceback (most recent call last):
+  File "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts/stain_normalization.py", line 30, in <module>
+    slide_image = wsi_reader.read_region(location=(0, 0), level=0, size=wsi_reader.slide_dimensions(resolution= 1.0, units="mpp")[0]) # Changed from .5 to 2.0
+                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsireader.py", line 745, in slide_dimensions
+    ) = self._find_read_bounds_params(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsireader.py", line 794, in _find_read_bounds_params
+    read_level, post_read_scale_factor = self._find_optimal_level_and_downsample(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsireader.py", line 477, in _find_optimal_level_and_downsample
+    level_scales = self.info.relative_level_scales(resolution, units)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsimeta.py", line 289, in relative_level_scales
+    raise ValueError(msg)
+ValueError: MPP is None. Cannot determine scale in terms of MPP.

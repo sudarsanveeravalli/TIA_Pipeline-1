@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts/read_wsi.py", line 12, in <module>
+    wsi = WSIReader.open(args.input)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsireader.py", line 329, in open
+    return OpenSlideWSIReader(input_path, mpp=mpp, power=power)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsireader.py", line 1660, in __init__
+    super().__init__(input_img=input_img, mpp=mpp, power=power)
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsireader.py", line 381, in __init__
+    raise FileNotFoundError(msg)
+FileNotFoundError: Input path does not exist: DI_dombox2_0006.svs

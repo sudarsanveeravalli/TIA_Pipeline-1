@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts/tissue_mask.py", line 12, in <module>
+    wsi = WSIReader.open(args.input)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsireader.py", line 326, in open
+    return suffix_to_reader[last_suffix](input_path, mpp=mpp, power=power)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/wsicore/wsireader.py", line 2828, in __init__
+    self.img = utils.imread(self.input_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/utils/misc.py", line 195, in imread
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cv2.error: OpenCV(4.8.0) /io/opencv/modules/imgproc/src/color.cpp:182: error: (-215:Assertion failed) !_src.empty() in function 'cvtColor'
+

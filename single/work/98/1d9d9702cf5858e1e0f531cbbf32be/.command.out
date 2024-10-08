@@ -1,0 +1,3 @@
+|2024-10-08|18:50:09.140| [INFO] Using default reference image from tiatoolbox.
+|2024-10-08|18:50:20.216| [INFO] Stain normalization completed. Normalized PNG image saved to normalized_wsi.png
+|2024-10-08|18:50:20.216| [INFO] Metadata saved to metadata.pkl

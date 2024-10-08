@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/ubuntu/bala/bala/ImpartLabs/TIA_Pipeline/single/Scripts/stain_normalization.py", line 30, in <module>
+    normalized_image = normalizer.transform(tissue_patch)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/tools/stainnorm.py", line 99, in transform
+    source_concentrations = self.get_concentrations(img, stain_matrix_source)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/tools/stainnorm.py", line 61, in get_concentrations
+    od = rgb2od(img).reshape((-1, 3))
+         ^^^^^^^^^^^
+  File "/home/ubuntu/bala/bala/lib/python3.11/site-packages/tiatoolbox/utils/transforms.py", line 225, in rgb2od
+    img[mask] = 1
+    ~~~^^^^^^
+ValueError: assignment destination is read-only
