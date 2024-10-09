@@ -4,7 +4,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description="Tile Extraction")
 parser.add_argument('--input', type=str, help='Path to WSI file')
-parser.add_argument('--heatmap', type=str, help='Path to heatmap image')
+#parser.add_argument('--heatmap', type=str, help='Path to heatmap image')
 parser.add_argument('--output', type=str, help='Output directory to save extracted tiles')
 
 args = parser.parse_args()
