@@ -205,7 +205,7 @@ with open(metrics_output_path, 'w') as f:
 
 logger.info(f"Segmentation metrics saved to {metrics_output_path}")
 
-img_file_name = [args.input]
+img_file_name = args.input
 tile_img = imread(img_file_name)
 
 # Define the coloring dictionary (assign colors to different types of nuclei)
