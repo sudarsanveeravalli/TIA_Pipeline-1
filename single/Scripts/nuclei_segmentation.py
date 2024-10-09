@@ -9,6 +9,7 @@ from skimage import measure
 import logging
 import torch
 import json
+import numpy as np
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -116,7 +117,7 @@ def calculate_metrics(nuclei_predictions):
         box_area = (nucleus['box'][2] - nucleus['box'][0]) * (nucleus['box'][3] - nucleus['box'][1])
         total_area += box_area
         total_probability += nucleus.get('prob', 0)
-        centroids.append(nucleus['centroid'])
+        centroids.append(nucleus['centroid'].tolist())  # Convert ndarray to list for JSON serialization
 
         # If type is neoplastic (ID 1), count it
         if nucleus.get('type') == 1:
