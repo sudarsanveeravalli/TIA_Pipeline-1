@@ -3,7 +3,7 @@ import os
 import joblib
 import matplotlib.pyplot as plt
 from tiatoolbox.models.engine.nucleus_instance_segmentor import NucleusInstanceSegmentor
-from tiatoolbox.utils.misc import download_data, imread
+from tiatoolbox.utils.misc import imread
 from tiatoolbox.utils.visualization import overlay_prediction_contours
 from tiatoolbox.wsicore.wsireader import WSIReader
 from skimage import measure
@@ -11,6 +11,7 @@ import logging
 import torch
 import json
 import numpy as np
+from PIL import Image
 from scipy.spatial import distance
 
 logging.basicConfig(level=logging.DEBUG)
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 # Parsing input arguments
 parser = argparse.ArgumentParser(description="Nuclei Segmentation using HoVerNet")
 parser.add_argument('--input', type=str, help='Path to normalized image or WSI', required=True)
+parser.add_argument('--mask', type=str, help='Path to tissue mask PNG file', required=True)  # Tissue mask argument
 parser.add_argument('--output_dir', type=str, help='Directory to save output results', required=True)
 parser.add_argument('--metadata', type=str, help='Path to metadata.pkl file', required=False)
 parser.add_argument('--mode', type=str, default="tile", choices=["wsi", "tile"], help='Processing mode: "wsi" or "tile"')
@@ -63,6 +65,9 @@ segmentor = NucleusInstanceSegmentor(
     auto_generate_mask=False
 )
 
+# Load the tissue mask
+tissue_mask = np.array(Image.open(args.mask).convert('L')) > 0  # Convert mask to boolean
+
 # Process depending on the mode (wsi or tile)
 if args.mode == "wsi":
     logger.info(f"Running segmentation on WSI: {args.input}")
@@ -73,7 +78,8 @@ if args.mode == "wsi":
             save_dir=args.output_dir,
             mode='wsi',
             on_gpu=args.gpu,
-            crash_on_exception=False
+            crash_on_exception=False,
+            mask=tissue_mask  # Apply tissue mask during segmentation
         )
     except Exception as e:
         logger.error(f"Segmentation failed for WSI: {e}")
@@ -86,7 +92,8 @@ else:
             save_dir=args.output_dir,
             mode='tile',
             on_gpu=args.gpu,
-            crash_on_exception=False
+            crash_on_exception=False,
+            mask=tissue_mask  # Apply tissue mask during segmentation
         )
     except Exception as e:
         logger.error(f"Segmentation failed for Tile: {e}")
@@ -196,7 +203,6 @@ def calculate_metrics(nuclei_predictions):
 
     return metrics
 
-
 # Calculate the metrics and save to a JSON file
 metrics = calculate_metrics(nuclei_predictions)
 metrics_output_path = os.path.join(output_dir_for_image, 'segmentation_metrics.json')
@@ -205,6 +211,7 @@ with open(metrics_output_path, 'w') as f:
 
 logger.info(f"Segmentation metrics saved to {metrics_output_path}")
 
+# Load the input image (Tile or WSI)
 img_file_name = args.input
 tile_img = imread(img_file_name)
 
@@ -221,7 +228,7 @@ color_dict = {
 # Create the overlay image
 overlaid_predictions = overlay_prediction_contours(
     canvas=tile_img,
-    inst_dict= output,  # Pass the predictions for the instance map
+    inst_dict=output,  # Pass the predictions for the instance map
     draw_dot=False,
     type_colours=color_dict,
     line_thickness=2,
