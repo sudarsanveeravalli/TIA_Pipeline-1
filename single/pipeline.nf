@@ -39,6 +39,8 @@ process stain_normalization {
 
     publishDir "${params.outdir}", mode: 'copy'
 
+    echo true
+
     script:
     """
     python ${params.scripts}/stain_normalization.py --input $wsi_file --output normalized_wsi.png --method vahadane
