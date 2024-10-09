@@ -90,11 +90,24 @@ else:
     if tissue_mask is None:
         raise ValueError(f"Failed to load tissue mask: {args.mask}")
 
+    # Ensure the mask is binary (if it's not, threshold it)
+    _, tissue_mask_binary = cv2.threshold(tissue_mask, 127, 255, cv2.THRESH_BINARY)
+
+
     # Load the input image
     logger.info(f"Loading input image: {args.input}")
     input_img = imread(args.input)
     if input_img is None:
         raise ValueError(f"Failed to load input image: {args.input}")
+
+   # Ensure the mask and input image have the same dimensions
+    if tissue_mask_binary.shape[:2] != input_img.shape[:2]:
+        logger.info(f"Resizing tissue mask to match the input image dimensions: {input_img.shape[:2]}")
+        tissue_mask_binary = cv2.resize(tissue_mask_binary, (input_img.shape[1], input_img.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+    # Convert input image to uint8 if it's in a different format
+    if input_img.dtype != np.uint8:
+        input_img = input_img.astype(np.uint8)
 
     # Apply the mask to the input image (mask out non-tissue regions)
     logger.info("Applying tissue mask to the input image.")
