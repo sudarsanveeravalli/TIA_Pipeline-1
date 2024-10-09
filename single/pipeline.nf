@@ -52,7 +52,7 @@ process tissue_mask {
         path normalized_wsi
 
     output:
-        path "tissue_mask"
+        path "tissue_mask.png"
 
     publishDir "${params.outdir}", mode: 'copy'
 
