@@ -145,8 +145,12 @@ def calculate_metrics(nuclei_predictions):
         confidences.append(nucleus.get('prob', 0))
 
         # Check for overlaps (bounding boxes overlap)
-        if any(nucleus['box'] == other_nucleus['box'] for _, other_nucleus in nuclei_predictions.items()):
-            nuclei_with_overlaps += 1
+        for _, other_nucleus in nuclei_predictions.items():
+            if np.array_equal(nucleus['box'], other_nucleus['box']):
+                continue  # Skip comparison with itself
+            if np.any(np.intersect1d(nucleus['box'], other_nucleus['box'])):
+                nuclei_with_overlaps += 1
+                break  # Count overlap only once per nucleus
 
         # Nearest neighbor distance
         distances = distance.cdist([nucleus['centroid']], centroids, 'euclidean')
@@ -190,6 +194,7 @@ def calculate_metrics(nuclei_predictions):
     }
 
     return metrics
+
 
 # Calculate the metrics and save to a JSON file
 metrics = calculate_metrics(nuclei_predictions)
