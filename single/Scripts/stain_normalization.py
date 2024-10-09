@@ -62,7 +62,7 @@ normalized_image = stain_normalizer.transform(slide_image_writable)
 
 # Ensure the output directory exists
 output_path = Path(args.output)
-logger.info(f"output_path {output_path})
+logger.info(f"output_path {output_path}")
 output_dir = output_path.parent
 output_dir.mkdir(parents=True, exist_ok=True)
 
