@@ -221,7 +221,7 @@ color_dict = {
 # Create the overlay image
 overlaid_predictions = overlay_prediction_contours(
     canvas=tile_img,
-    inst_dict={'inst_map': output},  # Pass the predictions for the instance map
+    inst_dict= output,  # Pass the predictions for the instance map
     draw_dot=False,
     type_colours=color_dict,
     line_thickness=2,
