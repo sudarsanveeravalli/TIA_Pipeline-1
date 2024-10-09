@@ -11,6 +11,7 @@ import torch
 import json
 import numpy as np
 from scipy.spatial import distance
+import cv2
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
