@@ -10,6 +10,7 @@ import logging
 import torch
 import json
 import numpy as np
+from scipy.spatial import distance
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -105,34 +106,87 @@ nuclei_predictions = joblib.load(inst_map_path)
 
 logger.info(f"Number of detected nuclei: {len(nuclei_predictions)}")
 
-# Extract metrics from the nuclei predictions
+# Calculate metrics
 def calculate_metrics(nuclei_predictions):
     total_area = 0
+    total_aspect_ratio = 0
     total_nuclei = len(nuclei_predictions)
     total_probability = 0
-    total_neoplastic = 0
-    centroids = []
+    nearest_neighbor_distances = []
+    nuclei_with_overlaps = 0
 
+    type_distribution = {
+        'neoplastic_epithelial': 0,
+        'inflammatory': 0,
+        'connective': 0,
+        'dead_cells': 0,
+        'other': 0
+    }
+
+    confidences = []
+    centroids = []
+    
+    # Gather centroids for nearest neighbor calculation
+    for _, nucleus in nuclei_predictions.items():
+        centroids.append(np.array(nucleus['centroid']))
+
+    # Calculate metrics for each nucleus
     for _, nucleus in nuclei_predictions.items():
         box_area = (nucleus['box'][2] - nucleus['box'][0]) * (nucleus['box'][3] - nucleus['box'][1])
         total_area += box_area
-        total_probability += nucleus.get('prob', 0)
-        centroids.append(nucleus['centroid'].tolist())  # Convert ndarray to list for JSON serialization
 
-        # If type is neoplastic (ID 1), count it
-        if nucleus.get('type') == 1:
-            total_neoplastic += 1
+        # Calculate aspect ratio
+        width = nucleus['box'][2] - nucleus['box'][0]
+        height = nucleus['box'][3] - nucleus['box'][1]
+        aspect_ratio = width / height
+        total_aspect_ratio += aspect_ratio
+
+        # Confidence score
+        confidences.append(nucleus.get('prob', 0))
+
+        # Check for overlaps (bounding boxes overlap)
+        if any(nucleus['box'] == other_nucleus['box'] for _, other_nucleus in nuclei_predictions.items()):
+            nuclei_with_overlaps += 1
+
+        # Nearest neighbor distance
+        distances = distance.cdist([nucleus['centroid']], centroids, 'euclidean')
+        nearest_distance = np.partition(distances.flatten(), 1)[1]  # Skip distance to itself
+        nearest_neighbor_distances.append(nearest_distance)
+
+        # Nucleus type classification
+        nucleus_type = nucleus.get('type', None)
+        if nucleus_type == 1:
+            type_distribution['neoplastic_epithelial'] += 1
+        elif nucleus_type == 2:
+            type_distribution['inflammatory'] += 1
+        elif nucleus_type == 3:
+            type_distribution['connective'] += 1
+        elif nucleus_type == 4:
+            type_distribution['dead_cells'] += 1
+        else:
+            type_distribution['other'] += 1
 
     avg_area = total_area / total_nuclei if total_nuclei > 0 else 0
-    avg_probability = total_probability / total_nuclei if total_nuclei > 0 else 0
-    neoplastic_fraction = total_neoplastic / total_nuclei if total_nuclei > 0 else 0
+    avg_aspect_ratio = total_aspect_ratio / total_nuclei if total_nuclei > 0 else 0
+    avg_probability = np.mean(confidences)
+    avg_nearest_neighbor_distance = np.mean(nearest_neighbor_distances)
+
+    # Assuming a given area of the tile (in mm²), calculate density
+    tile_area = 1  # In mm², adjust according to your actual data
+    nuclei_density = total_nuclei / tile_area
 
     metrics = {
         'total_nuclei': total_nuclei,
-        'average_area': avg_area,
-        'average_probability': avg_probability,
-        'neoplastic_fraction': neoplastic_fraction,
-        'centroids': centroids
+        'nucleus_type_distribution': type_distribution,
+        'average_nucleus_area': avg_area,
+        'average_aspect_ratio': avg_aspect_ratio,
+        'nearest_neighbor_distance': avg_nearest_neighbor_distance,
+        'nuclei_density': nuclei_density,
+        'confidence_score_distribution': {
+            'average_confidence': avg_probability,
+            'low_confidence_count': len([c for c in confidences if c < 0.5])
+        },
+        'nuclei_with_overlaps': nuclei_with_overlaps
     }
 
     return metrics
@@ -144,5 +198,3 @@ with open(metrics_output_path, 'w') as f:
     json.dump(metrics, f, indent=4)
 
 logger.info(f"Segmentation metrics saved to {metrics_output_path}")
-
-# Continue with any further visualization if required
