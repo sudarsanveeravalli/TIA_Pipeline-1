@@ -78,6 +78,7 @@ normalized_image_pil.save(png_output_path)
 
 # Store the metadata for later use (e.g., segmentation)
 metadata_path = output_dir / 'metadata.pkl'
+logger.info(f"Output Directory Path {output_dir}")
 with open(metadata_path, 'wb') as f:
     pickle.dump(metadata, f)
 
