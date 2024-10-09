@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 from tiatoolbox.models.engine.nucleus_instance_segmentor import NucleusInstanceSegmentor
 from tiatoolbox.utils.visualization import overlay_prediction_contours
 from tiatoolbox.wsicore.wsireader import WSIReader
-from skimage import measure  # Use skimage to compute region properties
+from skimage import measure
 import logging
 import torch
+import json
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -97,99 +98,50 @@ logger.info(f"Segmentation results saved in: {output_dir_for_image}")
 # Define the path to the instance map file
 inst_map_path = os.path.join(output_dir_for_image, '0.dat')
 
-
-
 # Load the segmentation results
 logger.info(f"Loading segmentation results from {inst_map_path}")
 nuclei_predictions = joblib.load(inst_map_path)
 
 logger.info(f"Number of detected nuclei: {len(nuclei_predictions)}")
-# Extracting the nucleus IDs and select the first one
-nuc_id_list = list(nuclei_predictions.keys())
-selected_nuc_id = nuc_id_list[0]
-logger.info(f"Nucleus prediction structure for nucleus ID: {selected_nuc_id}")
-sample_nuc = nuclei_predictions[selected_nuc_id]
-sample_nuc_keys = list(sample_nuc)
-logger.info(
-    "Keys in the output dictionary: [%s, %s, %s, %s, %s]",
-    sample_nuc_keys[0],
-    sample_nuc_keys[1],
-    sample_nuc_keys[2],
-    sample_nuc_keys[3],
-    sample_nuc_keys[4],
-)
-logger.info(
-    "Bounding box: (%d, %d, %d, %d)",
-    sample_nuc["box"][0],
-    sample_nuc["box"][1],
-    sample_nuc["box"][2],
-    sample_nuc["box"][3],
-)
-logger.info(
-    "Centroid: (%d, %d)",
-    sample_nuc["centroid"][0],
-    sample_nuc["centroid"][1],
-)
 
-# # Visualization (for tiles)
-# if args.mode == "tile":
-#     tile_img = plt.imread(args.input)
+# Extract metrics from the nuclei predictions
+def calculate_metrics(nuclei_predictions):
+    total_area = 0
+    total_nuclei = len(nuclei_predictions)
+    total_probability = 0
+    total_neoplastic = 0
+    centroids = []
 
-#     # Load the instance map
-#     inst_map = nuclei_predictions.get('inst_map', None)
-#     if inst_map is None:
-#         logger.error("Instance map not found in nuclei predictions.")
-#         exit(1)
+    for _, nucleus in nuclei_predictions.items():
+        box_area = (nucleus['box'][2] - nucleus['box'][0]) * (nucleus['box'][3] - nucleus['box'][1])
+        total_area += box_area
+        total_probability += nucleus.get('prob', 0)
+        centroids.append(nucleus['centroid'])
 
-#     # Generate instance data including contours using skimage
-#     regions = measure.regionprops(inst_map)
-#     inst_data = []
+        # If type is neoplastic (ID 1), count it
+        if nucleus.get('type') == 1:
+            total_neoplastic += 1
 
-#     for region in regions:
-#         # Get the contour coordinates
-#         contours = measure.find_contours(inst_map == region.label, 0.5)
-#         contour = contours[0] if contours else None
-#         inst_data.append({
-#             'label': region.label,
-#             'bbox': region.bbox,
-#             'centroid': region.centroid,
-#             'contour': contour,
-#         })
+    avg_area = total_area / total_nuclei if total_nuclei > 0 else 0
+    avg_probability = total_probability / total_nuclei if total_nuclei > 0 else 0
+    neoplastic_fraction = total_neoplastic / total_nuclei if total_nuclei > 0 else 0
 
-#     inst_dict = {'inst_map': inst_map, 'instances': inst_data}
+    metrics = {
+        'total_nuclei': total_nuclei,
+        'average_area': avg_area,
+        'average_probability': avg_probability,
+        'neoplastic_fraction': neoplastic_fraction,
+        'centroids': centroids
+    }
 
-#     overlaid_predictions = overlay_prediction_contours(
-#         canvas=tile_img,
-#         inst_dict=inst_dict,
-#         draw_dot=False,
-#         line_thickness=2
-#     )
+    return metrics
 
-#     plt.imshow(overlaid_predictions)
-#     plt.axis('off')
-#     overlay_path = os.path.join(args.output_dir, "nuclei_overlay.png")
-#     plt.savefig(overlay_path, bbox_inches='tight', pad_inches=0)
-#     logger.info(f"Nuclei overlay image saved at {overlay_path}")
-#     plt.show()
+# Calculate the metrics and save to a JSON file
+metrics = calculate_metrics(nuclei_predictions)
+metrics_output_path = os.path.join(output_dir_for_image, 'segmentation_metrics.json')
+with open(metrics_output_path, 'w') as f:
+    json.dump(metrics, f, indent=4)
 
-#     logger.info(f"Number of detected nuclei with contours: {len(inst_data)}")
+logger.info(f"Segmentation metrics saved to {metrics_output_path}")
 
-#     # Extracting the nucleus IDs and selecting the first one
-#     if inst_data:
-#         selected_nuc = inst_data[0]  # inst_data is a list of dicts
-#         selected_nuc_id = selected_nuc['label']
-#         logger.info(f"Nucleus prediction structure for nucleus ID: {selected_nuc_id}")
-
-#         sample_nuc_keys = list(selected_nuc.keys())
-#         logger.info(f"Keys in the output dictionary: {sample_nuc_keys}")
-
-#         bbox = selected_nuc['bbox']  # (min_row, min_col, max_row, max_col)
-#         logger.info(
-#             f"Bounding box: ({bbox[1]}, {bbox[0]}, {bbox[3]}, {bbox[2]})"
-#         )
-#         centroid = selected_nuc['centroid']  # (row, col)
-#         logger.info(f"Centroid: ({centroid[1]}, {centroid[0]})")
-#     else:
-#         logger.warning("No valid nuclei found with contours.")
-
-# logger.info("Processing complete.")
+# Continue with any further visualization if required
