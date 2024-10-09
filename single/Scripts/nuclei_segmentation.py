@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 # Parsing input arguments
 parser = argparse.ArgumentParser(description="Nuclei Segmentation using HoVerNet")
 parser.add_argument('--input', type=str, help='Path to normalized image or WSI', required=True)
+parser.add_argument('--mask', type=str, help='Path to tissue mask image (binary mask)', required=True)
 parser.add_argument('--output_dir', type=str, help='Directory to save output results', required=True)
 parser.add_argument('--metadata', type=str, help='Path to metadata.pkl file', required=False)
 parser.add_argument('--mode', type=str, default="tile", choices=["wsi", "tile"], help='Processing mode: "wsi" or "tile"')
@@ -79,9 +80,26 @@ if args.mode == "wsi":
         exit(1)
 else:
     logger.info(f"Running segmentation on Tile: {args.input}")
+    
+    # Load the tissue mask (binary mask)
+    logger.info(f"Loading tissue mask from: {args.mask}")
+    tissue_mask = cv2.imread(args.mask, cv2.IMREAD_GRAYSCALE)
+    if tissue_mask is None:
+        raise ValueError(f"Failed to load tissue mask: {args.mask}")
+
+    # Load the input image
+    logger.info(f"Loading input image: {args.input}")
+    input_img = imread(args.input)
+    if input_img is None:
+        raise ValueError(f"Failed to load input image: {args.input}")
+
+    # Apply the mask to the input image (mask out non-tissue regions)
+    logger.info("Applying tissue mask to the input image.")
+    masked_img = cv2.bitwise_and(input_img, input_img, mask=tissue_mask)
+
     try:
         output = segmentor.predict(
-            imgs=[args.input],
+            imgs=[masked_img],
             save_dir=args.output_dir,
             mode='tile',
             on_gpu=args.gpu,
