@@ -203,3 +203,36 @@ with open(metrics_output_path, 'w') as f:
     json.dump(metrics, f, indent=4)
 
 logger.info(f"Segmentation metrics saved to {metrics_output_path}")
+
+img_file_name = [args.input]
+tile_img = imread(img_file_name)
+
+# Define the coloring dictionary (assign colors to different types of nuclei)
+color_dict = {
+    0: ("background", (255, 165, 0)),
+    1: ("neoplastic epithelial", (255, 0, 0)),
+    2: ("inflammatory", (255, 255, 0)),
+    3: ("connective", (0, 255, 0)),
+    4: ("dead cells", (0, 0, 0)),
+    5: ("non-neoplastic epithelial", (0, 0, 255)),
+}
+
+# Create the overlay image
+overlaid_predictions = overlay_prediction_contours(
+    canvas=tile_img,
+    inst_dict={'inst_map': output},  # Pass the predictions for the instance map
+    draw_dot=False,
+    type_colours=color_dict,
+    line_thickness=2,
+)
+
+# Save the overlaid image
+output_overlay_path = os.path.join(args.output_dir, "nuclei_overlay.png")
+
+# Save the figure to file without displaying it
+plt.imshow(overlaid_predictions)
+plt.axis("off")
+plt.savefig(output_overlay_path, bbox_inches="tight", pad_inches=0)
+plt.close()  # Close the plot to avoid showing or holding it in memory
+
+print(f"Nuclei overlay image saved at {output_overlay_path}")
